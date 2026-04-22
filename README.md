@@ -16,7 +16,7 @@ A comprehensive web-based application built with Django designed to effectively 
 
 - **Backend:** Python, Django
 - **Frontend:** HTML, CSS, JavaScript
-- **Database:** SQLite (Configurable for PostgreSQL/MySQL)
+- **Database:** MySQL
 
 ## Setup & Installation
 
