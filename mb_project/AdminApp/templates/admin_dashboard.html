@@ -1,0 +1,227 @@
+{% extends "admin_nav.html" %}
+{%block content%}
+            <!-- Top Header -->
+         
+                <!-- Stats Cards -->
+                <div class="stats-cards">
+                    <div class="stat-card employees">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>1,247</h3>
+                            <p>Total Employees</p>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i> 12% from last month
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card branches">
+                        <div class="stat-icon">
+                            <i class="fas fa-sitemap"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>18</h3>
+                            <p>Active Branches</p>
+                            <div class="stat-change positive">
+                                <i class="fas fa-plus"></i> 2 new this month
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card attendance">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>94.2%</h3>
+                            <p>Today's Attendance</p>
+                            <div class="stat-change negative">
+                                <i class="fas fa-arrow-down"></i> 2.1% from yesterday
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card salary">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>$287,500</h3>
+                            <p>Monthly Salary Pool</p>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i> 8% from last month
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts Section -->
+                <div class="charts-section">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Monthly Attendance Trend</h3>
+                            <select class="form-control" style="padding: 8px 15px; border-radius: 5px; border: 1px solid #ddd; background-color: white;">
+                                <option>Last 6 Months</option>
+                                <option>Last Year</option>
+                                <option>All Time</option>
+                            </select>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="attendanceChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Branch Distribution</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="branchChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="recent-activity">
+                    <div class="activity-header">
+                        <h3>Recent Activity</h3>
+                        <a href="#" style="color: var(--primary); text-decoration: none; font-weight: 500;">View All</a>
+                    </div>
+                    <ul class="activity-list">
+                        <li class="activity-item">
+                            <div class="activity-icon checkin">
+                                <i class="fas fa-sign-in-alt"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4>John Smith checked in</h4>
+                                <p>New York Branch | 09:05 AM</p>
+                            </div>
+                            <div class="activity-time">10 min ago</div>
+                        </li>
+                        
+                        <li class="activity-item">
+                            <div class="activity-icon late">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4>Sarah Johnson late arrival</h4>
+                                <p>London Branch | 09:35 AM</p>
+                            </div>
+                            <div class="activity-time">45 min ago</div>
+                        </li>
+                        
+                        <li class="activity-item">
+                            <div class="activity-icon checkout">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4>Mike Williams checked out</h4>
+                                <p>Tokyo Branch | 05:45 PM</p>
+                            </div>
+                            <div class="activity-time">2 hours ago</div>
+                        </li>
+                        
+                        <li class="activity-item">
+                            <div class="activity-icon absent">
+                                <i class="fas fa-user-times"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4>Emma Davis marked absent</h4>
+                                <p>Sydney Branch | No check-in</p>
+                            </div>
+                            <div class="activity-time">3 hours ago</div>
+                        </li>
+                        
+                        <li class="activity-item">
+                            <div class="activity-icon checkin">
+                                <i class="fas fa-sign-in-alt"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4>Robert Brown checked in</h4>
+                                <p>Toronto Branch | 08:55 AM</p>
+                            </div>
+                            <div class="activity-time">5 hours ago</div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <div class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h4>Add Employee</h4>
+                        <p>Add new employee to system</p>
+                    </div>
+                    
+                    <div class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <h4>Generate Payroll</h4>
+                        <p>Process monthly salaries</p>
+                    </div>
+                    
+                    <div class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <h4>View Reports</h4>
+                        <p>Generate detailed analytics</p>
+                    </div>
+                    
+                    <div class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h4>Add Branch</h4>
+                        <p>Create new branch location</p>
+                    </div>
+                </div>
+                
+                <!-- Branch Status -->
+                <div class="branch-status">
+                    <h3>Branch Status Overview</h3>
+                    <div class="branch-list">
+                        <div class="branch-item">
+                            <div class="branch-header">
+                                <h4>New York Main Branch</h4>
+                                <span class="branch-status-badge active">Active</span>
+                            </div>
+                            <div class="branch-details">
+                                <p><i class="fas fa-users"></i> 187 Employees</p>
+                                <p><i class="fas fa-calendar-check"></i> 92% Attendance</p>
+                                <p><i class="fas fa-user-tie"></i> Manager: John Smith</p>
+                            </div>
+                        </div>
+                        
+                        <div class="branch-item">
+                            <div class="branch-header">
+                                <h4>London Branch</h4>
+                                <span class="branch-status-badge active">Active</span>
+                            </div>
+                            <div class="branch-details">
+                                <p><i class="fas fa-users"></i> 154 Employees</p>
+                                <p><i class="fas fa-calendar-check"></i> 95% Attendance</p>
+                                <p><i class="fas fa-user-tie"></i> Manager: Sarah Johnson</p>
+                            </div>
+                        </div>
+                        
+                        <div class="branch-item">
+                            <div class="branch-header">
+                                <h4>Tokyo Branch</h4>
+                                <span class="branch-status-badge active">Active</span>
+                            </div>
+                            <div class="branch-details">
+                                <p><i class="fas fa-users"></i> 203 Employees</p>
+                                <p><i class="fas fa-calendar-check"></i> 96% Attendance</p>
+                                <p><i class="fas fa-user-tie"></i> Manager: Kenji Tanaka</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+       {% endblock %}

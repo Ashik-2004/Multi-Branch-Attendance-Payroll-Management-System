@@ -1,0 +1,391 @@
+{% extends 'branch_nav.html' %}
+{% load static %}
+{%load custom_filters.py%}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-dark fw-bold">Salary Calculation</h1>
+            <p class="text-muted mb-0">Calculate and manage employee salaries</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'manager_payroll_settings' %}" class="btn btn-outline-primary">
+                <i class="fas fa-cog me-2"></i>Settings
+            </a>
+            <a href="{% url 'manager_export_salary' %}?month={{ current_month }}&year={{ current_year }}" 
+               class="btn btn-success" id="exportBtn">
+                <i class="fas fa-file-excel me-2"></i>Export Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-medium">Month</label>
+                    <select name="month" class="form-select" id="monthSelect">
+                        {% for m in months %}
+                        <option value="{{ m }}" {% if current_month == m %}selected{% endif %}>
+                            {{ m|get_month_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-medium">Year</label>
+                    <select name="year" class="form-select" id="yearSelect">
+                        {% for y in years %}
+                        <option value="{{ y }}" {% if current_year == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>View
+                    </button>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" name="action" value="calculate" class="btn btn-warning w-100">
+                        <i class="fas fa-calculator me-2"></i>Calculate All
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-4 col-md-4">
+            <div class="card border-0 shadow-sm bg-primary bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">Total Earnings</p>
+                            <h3 class="fw-bold mb-0 text-primary">₹{{ totals.total_earnings|floatformat:2|default:0 }}</h3>
+                        </div>
+                        <div class="icon-shape bg-primary text-white rounded-circle p-3">
+                            <i class="fas fa-rupee-sign fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-4 col-md-4">
+            <div class="card border-0 shadow-sm bg-danger bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">Total Deductions</p>
+                            <h3 class="fw-bold mb-0 text-danger">₹{{ totals.total_deductions|floatformat:2|default:0 }}</h3>
+                        </div>
+                        <div class="icon-shape bg-danger text-white rounded-circle p-3">
+                            <i class="fas fa-minus-circle fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-4 col-md-4">
+            <div class="card border-0 shadow-sm bg-success bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">Net Salary</p>
+                            <h3 class="fw-bold mb-0 text-success">₹{{ totals.total_net|floatformat:2|default:0 }}</h3>
+                        </div>
+                        <div class="icon-shape bg-success text-white rounded-circle p-3">
+                            <i class="fas fa-check-circle fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Salary Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-semibold">
+                    <i class="fas fa-list me-2 text-info"></i>Salary Details - {{ current_month|get_month_name }} {{ current_year }}
+                </h6>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-success" id="approveSelected" style="display: none;">
+                        <i class="fas fa-check-double me-2"></i>Approve Selected
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="post" id="salaryForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="approve" id="actionInput">
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="salaryTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="40">
+                                    <input type="checkbox" id="selectAll" class="form-check-input">
+                                </th>
+                                <th>Employee</th>
+                                <th>Present</th>
+                                <th>Absent</th>
+                                <th>OT Hours</th>
+                                <th>Basic Pay</th>
+                                <th>Allowances</th>
+                                <th>Deductions</th>
+                                <th>Net Salary</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for salary in salaries %}
+                            <tr>
+                                <td>
+                                    {% if salary.status == 'calculated' %}
+                                    <input type="checkbox" class="form-check-input salary-checkbox" 
+                                           name="salary_ids" value="{{ salary.calculation_id }}">
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div>
+                                        <h6 class="mb-0">{{ salary.employee.full_name }}</h6>
+                                        <small class="text-muted">{{ salary.employee.employee_code }}</small>
+                                    </div>
+                                </td>
+                                <td>{{ salary.present_days }}</td>
+                                <td>{{ salary.absent_days }}</td>
+                                <td>{{ salary.overtime_hours|floatformat:1 }}</td>
+                                <td>₹{{ salary.basic_pay|floatformat:2 }}</td>
+                                <td>₹{{ salary.hra|add:salary.conveyance|add:salary.medical|floatformat:2 }}</td>
+                                <td>₹{{ salary.total_deductions|floatformat:2 }}</td>
+                                <td class="fw-bold">₹{{ salary.net_salary|floatformat:2 }}</td>
+                                <td>
+                                    {% if salary.status == 'draft' %}
+                                    <span class="badge bg-secondary">Draft</span>
+                                    {% elif salary.status == 'calculated' %}
+                                    <span class="badge bg-warning text-dark">Calculated</span>
+                                    {% elif salary.status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                    {% elif salary.status == 'paid' %}
+                                    <span class="badge bg-info">Paid</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#detailModal{{ salary.calculation_id }}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Detail Modal -->
+                            <div class="modal fade" id="detailModal{{ salary.calculation_id }}" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Salary Details - {{ salary.employee.full_name }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h6 class="fw-semibold mb-3">Earnings</h6>
+                                                    <table class="table table-sm">
+                                                        <tr>
+                                                            <td>Basic Pay:</td>
+                                                            <td class="text-end">₹{{ salary.basic_pay|floatformat:2 }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>HRA:</td>
+                                                            <td class="text-end">₹{{ salary.hra|floatformat:2 }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Conveyance:</td>
+                                                            <td class="text-end">₹{{ salary.conveyance|floatformat:2 }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Medical:</td>
+                                                            <td class="text-end">₹{{ salary.medical|floatformat:2 }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Overtime Pay:</td>
+                                                            <td class="text-end">₹{{ salary.overtime_pay|floatformat:2 }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Bonus:</td>
+                                                            <td class="text-end">₹{{ salary.bonus|floatformat:2 }}</td>
+                                                        </tr>
+                                                        <tr class="fw-bold">
+                                                            <td>Total Earnings:</td>
+                                                            <td class="text-end">₹{{ salary.total_earnings|floatformat:2 }}</td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h6 class="fw-semibold mb-3">Deductions</h6>
+                                                    <table class="table table-sm">
+                                                        <tr>
+                                                            <td>Provident Fund:</td>
+                                                            <td class="text-end">₹{{ salary.provident_fund|floatformat:2 }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Tax Deduction:</td>
+                                                            <td class="text-end">₹{{ salary.tax_deduction|floatformat:2 }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Professional Tax:</td>
+                                                            <td class="text-end">₹{{ salary.professional_tax|floatformat:2 }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Loan Deduction:</td>
+                                                            <td class="text-end">₹{{ salary.loan_deduction|floatformat:2 }}</td>
+                                                        </tr>
+                                                        <tr class="fw-bold">
+                                                            <td>Total Deductions:</td>
+                                                            <td class="text-end">₹{{ salary.total_deductions|floatformat:2 }}</td>
+                                                        </tr>
+                                                        <tr class="fw-bold text-success">
+                                                            <td>Net Salary:</td>
+                                                            <td class="text-end">₹{{ salary.net_salary|floatformat:2 }}</td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-12">
+                                                    <p class="mb-1"><strong>Attendance Summary:</strong></p>
+                                                    <p>Present: {{ salary.present_days }} days | Absent: {{ salary.absent_days }} days | 
+                                                       Half Days: {{ salary.half_days }} | Overtime: {{ salary.overtime_hours }} hrs</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <tr>
+                                <td colspan="11" class="text-center py-4">
+                                    <i class="fas fa-calculator text-muted mb-2" style="font-size: 2rem;"></i>
+                                    <p class="text-muted mb-0">No salary records found. Click "Calculate All" to generate.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.icon-shape {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+}
+
+.modal-content {
+    border-radius: 12px;
+}
+
+.modal-header {
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.table-sm td {
+    padding: 0.3rem 0;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select All functionality
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.salary-checkbox');
+    const approveBtn = document.getElementById('approveSelected');
+    const salaryForm = document.getElementById('salaryForm');
+    
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+            updateApproveButton();
+        });
+    }
+    
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateApproveButton);
+    });
+    
+    function updateApproveButton() {
+        const checkedCount = document.querySelectorAll('.salary-checkbox:checked').length;
+        if (checkedCount > 0) {
+            approveBtn.style.display = 'inline-block';
+            approveBtn.textContent = `Approve Selected (${checkedCount})`;
+        } else {
+            approveBtn.style.display = 'none';
+        }
+    }
+    
+    // Approve selected
+    approveBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to approve the selected salaries?')) {
+            document.getElementById('actionInput').value = 'approve';
+            salaryForm.submit();
+        }
+    });
+    
+    // Update export URL when month/year changes
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+    const exportBtn = document.getElementById('exportBtn');
+    
+    function updateExportUrl() {
+        if (monthSelect && yearSelect && exportBtn) {
+            const url = new URL(exportBtn.href);
+            url.searchParams.set('month', monthSelect.value);
+            url.searchParams.set('year', yearSelect.value);
+            exportBtn.href = url.toString();
+        }
+    }
+    
+    monthSelect?.addEventListener('change', updateExportUrl);
+    yearSelect?.addEventListener('change', updateExportUrl);
+});
+</script>
+{% endblock %}

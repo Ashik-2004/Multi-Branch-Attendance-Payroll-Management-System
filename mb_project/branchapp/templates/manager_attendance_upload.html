@@ -1,0 +1,453 @@
+{% comment %} {% extends 'branch_nav.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-dark fw-bold">Payroll Settings</h1>
+            <p class="text-muted mb-0">Configure payroll calculation rules for your branch</p>
+        </div>
+        <div>
+            <a href="{% url 'manager_salary_calculation' %}" class="btn btn-primary">
+                <i class="fas fa-calculator me-2"></i>Calculate Salary
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Settings Form -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-sliders-h me-2 text-primary"></i>Payroll Configuration
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" id="settingsForm">
+                        {% csrf_token %}
+                        
+                        <!-- Overtime Settings -->
+                        <h6 class="fw-semibold mb-3">Overtime Settings</h6>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium">Overtime Rate (x normal)</label>
+                                <input type="number" step="0.1" min="1" max="3" 
+                                       class="form-control" name="overtime_rate" 
+                                       value="{{ settings.overtime_rate }}" required>
+                                <small class="text-muted">Example: 1.5 = 1.5 times normal rate</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium">Standard Working Hours</label>
+                                <input type="number" class="form-control" value="8" disabled>
+                                <small class="text-muted">Fixed at 8 hours per day</small>
+                            </div>
+                        </div>
+
+                        <!-- Allowances -->
+                        <h6 class="fw-semibold mb-3">Allowances</h6>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label fw-medium">HRA (% of Basic)</label>
+                                <input type="number" step="0.1" min="0" max="100" 
+                                       class="form-control" name="hra_percentage" 
+                                       value="{{ settings.hra_percentage }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-medium">Conveyance (Fixed)</label>
+                                <input type="number" step="0.01" min="0" 
+                                       class="form-control" name="conveyance_allowance" 
+                                       value="{{ settings.conveyance_allowance }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-medium">Medical (Fixed)</label>
+                                <input type="number" step="0.01" min="0" 
+                                       class="form-control" name="medical_allowance" 
+                                       value="{{ settings.medical_allowance }}" required>
+                            </div>
+                        </div>
+
+                        <!-- Deductions -->
+                        <h6 class="fw-semibold mb-3">Deductions</h6>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label fw-medium">PF (% of Basic)</label>
+                                <input type="number" step="0.1" min="0" max="20" 
+                                       class="form-control" name="provident_fund_percentage" 
+                                       value="{{ settings.provident_fund_percentage }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-medium">Professional Tax (Fixed)</label>
+                                <input type="number" step="0.01" min="0" 
+                                       class="form-control" name="professional_tax_amount" 
+                                       value="{{ settings.professional_tax_amount }}" required>
+                            </div>
+                        </div>
+
+                        <!-- Late Attendance -->
+                        <h6 class="fw-semibold mb-3">Late Attendance</h6>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" class="form-check-input" 
+                                           name="deduct_for_late" id="deductLate" 
+                                           {% if settings.deduct_for_late %}checked{% endif %}>
+                                    <label class="form-check-label fw-medium" for="deductLate">
+                                        Deduct for late arrival
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium">Late Minutes Threshold</label>
+                                <input type="number" min="0" class="form-control" 
+                                       name="late_minutes_threshold" 
+                                       value="{{ settings.late_minutes_threshold }}" required>
+                                <small class="text-muted">Minutes allowed before deduction</small>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-save me-2"></i>Save Settings
+                            </button>
+                            <button type="reset" class="btn btn-outline-secondary px-4">
+                                <i class="fas fa-undo me-2"></i>Reset
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Info Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-info-circle me-2 text-info"></i>About Settings
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Overtime Rate:</strong> Multiplier for overtime hours
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>HRA:</strong> House Rent Allowance as % of basic
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Conveyance:</strong> Fixed travel allowance
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Medical:</strong> Fixed medical allowance
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>PF:</strong> Provident Fund contribution
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Professional Tax:</strong> State government tax
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Current Values Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-calculator me-2 text-warning"></i>Current Values
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Overtime Rate:</td>
+                            <td class="fw-bold">{{ settings.overtime_rate }}x</td>
+                        </tr>
+                        <tr>
+                            <td>HRA:</td>
+                            <td class="fw-bold">{{ settings.hra_percentage }}%</td>
+                        </tr>
+                        <tr>
+                            <td>Conveyance:</td>
+                            <td class="fw-bold">₹{{ settings.conveyance_allowance }}</td>
+                        </tr>
+                        <tr>
+                            <td>Medical:</td>
+                            <td class="fw-bold">₹{{ settings.medical_allowance }}</td>
+                        </tr>
+                        <tr>
+                            <td>PF:</td>
+                            <td class="fw-bold">{{ settings.provident_fund_percentage }}%</td>
+                        </tr>
+                        <tr>
+                            <td>Professional Tax:</td>
+                            <td class="fw-bold">₹{{ settings.professional_tax_amount }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 12px;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1rem;
+}
+
+.form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13,110,253,.1);
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+}
+
+.table td {
+    padding: 0.5rem;
+}
+</style>
+{% endblock %} {% endcomment %}
+
+
+
+
+{% extends 'branch_nav.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-dark fw-bold">Upload Attendance Excel</h1>
+            <p class="text-muted mb-0">Import attendance data for payroll calculation</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'manager_download_template' %}" class="btn btn-success">
+                <i class="fas fa-download me-2"></i>Download Template
+            </a>
+            <a href="{% url 'manager_attendance_view' %}" class="btn btn-outline-primary">
+                <i class="fas fa-eye me-2"></i>View Attendance
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Upload Form -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-upload me-2 text-primary"></i>Upload Excel File
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" id="uploadForm">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label fw-medium">Month</label>
+                                <select name="month" class="form-select" required>
+                                    <option value="">Select Month</option>
+                                    {% for m in months %}
+                                    <option value="{{ m }}" {% if m == current_month %}selected{% endif %}>
+                                        {{ m }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-medium">Year</label>
+                                <select name="year" class="form-select" required>
+                                    <option value="">Select Year</option>
+                                    {% for y in years %}
+                                    <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>
+                                        {{ y }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-medium">Excel File</label>
+                                <input type="file" name="attendance_file" class="form-control" 
+                                       accept=".xlsx,.xls" required>
+                                <small class="text-muted">.xlsx or .xls only</small>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Excel Format Required:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>First column: Employee Code</li>
+                                <li>Columns 2-32: Days of month (1 to 31)</li>
+                                <li>Use: <span class="badge bg-success">P</span> for Present, 
+                                    <span class="badge bg-danger">A</span> for Absent, 
+                                    <span class="badge bg-warning">H</span> for Half Day</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i class="fas fa-upload me-2"></i>Upload and Import
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Recent Imports -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-history me-2 text-info"></i>Recent Imports
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_imports %}
+                        {% for log in recent_imports %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                            <div>
+                                <i class="fas fa-file-excel text-success me-2"></i>
+                                <span>{{ log.file_name|truncatechars:20 }}</span>
+                                <br>
+                                <small class="text-muted">
+                                    {{ log.month }}/{{ log.year }} | 
+                                    Success: {{ log.successful_records }} | 
+                                    Failed: {{ log.failed_records }}
+                                </small>
+                            </div>
+                            <small class="text-muted">{{ log.uploaded_at|date:"d M" }}</small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center mb-0">No imports yet</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-lightbulb me-2 text-warning"></i>Instructions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0 ps-3">
+                        <li class="mb-2">Download the template</li>
+                        <li class="mb-2">Fill employee codes and attendance (P/A/H)</li>
+                        <li class="mb-2">Select correct month and year</li>
+                        <li class="mb-2">Upload the filled Excel file</li>
+                        <li class="mb-2">Check results in View Attendance</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 12px;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #0d6efd, #0b5ed7);
+    border: none;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1rem;
+}
+
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadForm = document.getElementById('uploadForm');
+    
+    uploadForm.addEventListener('submit', function(e) {
+        const fileInput = document.querySelector('input[name="attendance_file"]');
+        const monthSelect = document.querySelector('select[name="month"]');
+        const yearSelect = document.querySelector('select[name="year"]');
+        
+        if (!fileInput.files.length) {
+            e.preventDefault();
+            alert('Please select a file to upload');
+            return;
+        }
+        
+        if (!monthSelect.value) {
+            e.preventDefault();
+            alert('Please select a month');
+            return;
+        }
+        
+        if (!yearSelect.value) {
+            e.preventDefault();
+            alert('Please select a year');
+            return;
+        }
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
+    });
+});
+</script>
+{% endblock %}

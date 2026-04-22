@@ -1,0 +1,75 @@
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead class="thead-light">
+            <tr>
+                <th>Schedule Name</th>
+                <th>Period</th>
+                <th>Month/Year</th>
+                <th>Date Range</th>
+                <th>Status</th>
+                <th>Assigned</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for schedule in all_schedules %}
+            <tr data-status="{{ schedule.status }}">
+                <td>
+                    <strong>{{ schedule.schedule_name }}</strong>
+                    {% if schedule.is_current %}
+                    <span class="badge badge-success ml-2">Current</span>
+                    {% elif schedule.is_future %}
+                    <span class="badge badge-info ml-2">Upcoming</span>
+                    {% endif %}
+                </td>
+                <td>{{ schedule.get_period_display }}</td>
+                <td>{{ schedule.month_name }} {{ schedule.year }}</td>
+                <td>{{ schedule.start_date|date:"M d" }} - {{ schedule.end_date|date:"M d, Y" }}</td>
+                <td>
+                    <span class="badge badge-status 
+                        {% if schedule.status == 'published' %}badge-success
+                        {% elif schedule.status == 'draft' %}badge-warning
+                        {% elif schedule.status == 'active' %}badge-primary
+                        {% else %}badge-secondary{% endif %}">
+                        {{ schedule.get_status_display }}
+                    </span>
+                </td>
+                <td>
+                    {% with schedule.assignments.count as count %}
+                    {% if count > 0 %}
+                    <span class="text-success">{{ count }} employees</span>
+                    {% else %}
+                    <span class="text-muted">Not assigned</span>
+                    {% endif %}
+                    {% endwith %}
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'view_schedule' schedule.schedule_id %}" 
+                           class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        {% if schedule.status == 'draft' %}
+                        <a href="#" class="btn btn-success btn-sm publish-schedule" 
+                           data-id="{{ schedule.schedule_id }}">
+                            <i class="fas fa-paper-plane"></i>
+                        </a>
+                        {% endif %}
+                        <a href="#" class="btn btn-danger btn-sm" 
+                           data-toggle="modal" 
+                           data-target="#deleteModal{{ schedule.schedule_id }}">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                    No schedules found
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

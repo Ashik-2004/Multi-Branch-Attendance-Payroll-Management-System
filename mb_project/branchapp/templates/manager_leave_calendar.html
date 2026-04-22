@@ -1,0 +1,136 @@
+{% extends 'branch_nav.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-dark fw-bold">Leave Calendar</h1>
+            <p class="text-muted mb-0">View all approved leaves</p>
+        </div>
+        <div>
+            <button class="btn btn-outline-primary" onclick="calendar.refetchEvents()">
+                <i class="fas fa-sync-alt me-2"></i>Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-4">
+                <div class="d-flex align-items-center">
+                    <div style="width: 20px; height: 20px; background-color: #28a745; margin-right: 8px; border-radius: 4px;"></div>
+                    <span>Casual Leave</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div style="width: 20px; height: 20px; background-color: #dc3545; margin-right: 8px; border-radius: 4px;"></div>
+                    <span>Sick Leave</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div style="width: 20px; height: 20px; background-color: #ffc107; margin-right: 8px; border-radius: 4px;"></div>
+                    <span>Earned Leave</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div style="width: 20px; height: 20px; background-color: #17a2b8; margin-right: 8px; border-radius: 4px;"></div>
+                    <span>Maternity Leave</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div style="width: 20px; height: 20px; background-color: #6f42c1; margin-right: 8px; border-radius: 4px;"></div>
+                    <span>Paternity Leave</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div style="width: 20px; height: 20px; background-color: #6c757d; margin-right: 8px; border-radius: 4px;"></div>
+                    <span>Other</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div id="calendar" style="height: 600px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- FullCalendar CSS -->
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+
+<!-- FullCalendar JS -->
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+
+<style>
+.fc-event {
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 2px 4px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+}
+
+.fc-event:hover {
+    opacity: 0.9 !important;
+}
+
+.fc-day-today {
+    background-color: rgba(13, 110, 253, 0.05) !important;
+}
+
+.fc-toolbar-title {
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing calendar...');
+    
+    const calendarEl = document.getElementById('calendar');
+    
+    // Initialize calendar with simple configuration
+    window.calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        
+        // Simple event source
+        events: '{% url "manager_leave_calendar" %}',
+        
+        // Style events
+        eventDidMount: function(info) {
+            // Apply colors
+            info.el.style.backgroundColor = info.event.backgroundColor || '#3788d8';
+            info.el.style.borderColor = info.event.borderColor || '#3788d8';
+            info.el.style.color = info.event.textColor || 'white';
+        },
+        
+        // Handle event click
+        eventClick: function(info) {
+            info.jsEvent.preventDefault();
+            if (info.event.url) {
+                window.location.href = info.event.url;
+            }
+        },
+        
+        height: 'auto',
+        firstDay: 1,
+        
+        // Error handling
+        eventSourceFailure: function(error) {
+            console.error('Failed to load events:', error);
+        }
+    });
+    
+    calendar.render();
+    console.log('Calendar rendered');
+});
+</script>
+{% endblock %}

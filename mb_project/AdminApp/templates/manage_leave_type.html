@@ -1,0 +1,285 @@
+{% extends 'admin_nav.html' %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h4 mb-1">Leave Types Management</h2>
+            <p class="text-muted mb-0">Manage leave categories and their configurations</p>
+        </div>
+        <div>
+            <a href="{% url 'leave_type_crud' %}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-plus-circle me-1"></i> Add New
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Form Section -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0">
+                        <i class="bi bi-{% if edit_id %}pencil-square{% else %}plus-circle{% endif %} text-primary me-2"></i>
+                        {% if edit_id %}Edit Leave Type{% else %}Create Leave Type{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="leaveForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Leave Name</label>
+                            {{ form.leave_name }}
+                            <div class="form-text">Enter a descriptive name for this leave type</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Maximum Days</label>
+                            {{ form.max_days }}
+                            <div class="form-text">Maximum number of days allowed per year</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-{% if edit_id %}check-lg{% else %}save{% endif %} me-1"></i>
+                                {% if edit_id %}Update{% else %}Save{% endif %}
+                            </button>
+                            
+                            {% if edit_id %}
+                                <a href="{% url 'leave_type_crud' %}" class="btn btn-outline-secondary">
+                                    Cancel
+                                </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- List Section -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Existing Leave Types</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if leave_types %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">#</th>
+                                    <th>Leave Name</th>
+                                    <th>Max Days</th>
+                                    <th class="text-end pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lt in leave_types %}
+                                <tr>
+                                    <td class="ps-4">{{ forloop.counter }}</td>
+                                    <td class="fw-medium">{{ lt.leave_name }}</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">
+                                            {{ lt.max_days }} days
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'edit_leave_type' lt.id %}" class="btn btn-outline-primary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal"
+                                                    data-leave-id="{{ lt.id }}"
+                                                    data-leave-name="{{ lt.leave_name }}">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="text-muted mb-3">
+                            <i class="bi bi-calendar-x" style="font-size: 3rem;"></i>
+                        </div>
+                        <p class="text-muted">No leave types found. Create your first leave type.</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if leave_types %}
+                <div class="card-footer bg-white py-3">
+                    <div class="text-muted small">
+                        Total: {{ leave_types|length }} leave type{{ leave_types|pluralize }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal (Hidden by default) -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="text-center mb-3">
+                    <div class="mb-3">
+                        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h6 class="fw-bold" id="modalLeaveName"></h6>
+                    <p class="text-muted mb-0">
+                        Are you sure you want to delete this leave type? This action cannot be undone.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Bootstrap CSS if not already included -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 0 20px rgba(0,0,0,0.08);
+        border-radius: 10px;
+    }
+    
+    .card-header {
+        background-color: white;
+        border-radius: 10px 10px 0 0 !important;
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+    
+    .table thead th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        border-top: none;
+        background-color: #f8f9fa;
+    }
+    
+    .table tbody tr {
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+    
+    .form-control:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .btn-outline-primary, .btn-outline-danger {
+        border-width: 1px;
+    }
+    
+    .btn-outline-primary:hover, .btn-outline-danger:hover {
+        transform: translateY(-1px);
+        transition: transform 0.2s;
+    }
+    
+    .badge {
+        font-weight: 500;
+        padding: 0.35em 0.65em;
+    }
+    
+    .modal-content {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .modal-header {
+        padding: 1.5rem 1.5rem 0.5rem;
+    }
+    
+    .modal-body {
+        padding: 0 1.5rem;
+    }
+    
+    .modal-footer {
+        padding: 0.5rem 1.5rem 1.5rem;
+    }
+</style>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Delete Modal Handler
+    document.addEventListener('DOMContentLoaded', function() {
+        var deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function(event) {
+                // Button that triggered the modal
+                var button = event.relatedTarget;
+                
+                // Extract info from data-* attributes
+                var leaveId = button.getAttribute('data-leave-id');
+                var leaveName = button.getAttribute('data-leave-name');
+                
+                // Update the modal's content
+                var modalTitle = deleteModal.querySelector('#modalLeaveName');
+                var deleteBtn = deleteModal.querySelector('#confirmDeleteBtn');
+                
+                modalTitle.textContent = 'Delete "' + leaveName + '"?';
+                deleteBtn.href = "{% url 'delete_leave_type' 0 %}".replace('0', leaveId);
+            });
+        }
+        
+        // Form validation
+        var form = document.getElementById('leaveForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                var leaveName = document.getElementById('id_leave_name').value.trim();
+                var maxDays = document.getElementById('id_max_days').value;
+                
+                if (!leaveName) {
+                    e.preventDefault();
+                    alert('Please enter a leave name');
+                    return false;
+                }
+                
+                if (!maxDays || maxDays <= 0 || isNaN(maxDays)) {
+                    e.preventDefault();
+                    alert('Please enter a valid number of days');
+                    return false;
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}

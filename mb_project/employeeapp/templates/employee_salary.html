@@ -1,0 +1,215 @@
+<!-- branchapp/templates/employee_salary.html -->
+{% extends "employee_nav.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fa fa-money"></i> My Salary Details</h2>
+        </div>
+    </div>
+    
+    <!-- Employee Info Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fa fa-user"></i> Employee Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="150">Employee Code</th>
+                                    <td><strong>{{ employee.employee_code }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <td>{{ employee.full_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Designation</th>
+                                    <td>{{ employee.designation.role|default:"Not Assigned" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="150">Salary Type</th>
+                                    <td>
+                                        {% if employee.salary_type == 'monthly' %}
+                                            <span class="badge badge-info">Monthly Salary</span>
+                                        {% else %}
+                                            <span class="badge badge-warning">Daily Wage</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Base Salary</th>
+                                    <td><strong>₹{{ employee.base_salary|floatformat:2 }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Joining Date</th>
+                                    <td>{{ employee.joining_date }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Current Month Salary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fa fa-calendar"></i> Current Month Salary - {{ month_name }} {{ current_year }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if current_payroll %}
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <h4 class="text-success">₹{{ current_payroll.net_salary|floatformat:2 }}</h4>
+                                    <p class="mb-0 text-muted">Net Salary</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <h4 class="text-primary">{{ current_payroll.present_days }}</h4>
+                                    <p class="mb-0 text-muted">Present Days</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h4 class="text-warning">{{ current_payroll.leave_days }}</h4>
+                                    <p class="mb-0 text-muted">Leave Days</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-info">
+                                <div class="card-body text-center">
+                                    <h4 class="text-info">{{ current_payroll.payment_status|title }}</h4>
+                                    <p class="mb-0 text-muted">Status</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12 text-center">
+                            <a href="{% url 'employee_payslip' current_payroll.payroll_id %}" class="btn btn-primary">
+                                <i class="fa fa-file-pdf-o"></i> View Payslip
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="fa fa-info-circle"></i> No salary data available for current month
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Salary History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fa fa-history"></i> Salary History</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Month</th>
+                                <th>Year</th>
+                                <th>Present Days</th>
+                                <th>Leave Days</th>
+                                <th>Deduction</th>
+                                <th>Net Salary</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payroll in payroll_history %}
+                            <tr>
+                                <td>
+                                    {% if payroll.month == 1 %}January
+                                    {% elif payroll.month == 2 %}February
+                                    {% elif payroll.month == 3 %}March
+                                    {% elif payroll.month == 4 %}April
+                                    {% elif payroll.month == 5 %}May
+                                    {% elif payroll.month == 6 %}June
+                                    {% elif payroll.month == 7 %}July
+                                    {% elif payroll.month == 8 %}August
+                                    {% elif payroll.month == 9 %}September
+                                    {% elif payroll.month == 10 %}October
+                                    {% elif payroll.month == 11 %}November
+                                    {% elif payroll.month == 12 %}December
+                                    {% endif %}
+                                </td>
+                                <td>{{ payroll.year }}</td>
+                                <td>{{ payroll.present_days }}</td>
+                                <td>{{ payroll.leave_days }}</td>
+                                <td>₹{{ payroll.absent_deduction|floatformat:2 }}</td>
+                                <td><strong>₹{{ payroll.net_salary|floatformat:2 }}</strong></td>
+                                <td>
+                                    {% if payroll.payment_status == 'paid' %}
+                                    <span class="badge badge-success">Paid</span>
+                                    {% else %}
+                                    <span class="badge badge-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'employee_payslip' payroll.payroll_id %}" class="btn btn-sm btn-info">
+                                        <i class="fa fa-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-3">
+                                    <i class="fa fa-info-circle"></i> No salary history found
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    .table th {
+        font-weight: 600;
+    }
+    .border-success, .border-primary, .border-warning, .border-info {
+        border-width: 2px;
+    }
+    @media print {
+        .btn, .navbar, footer {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}

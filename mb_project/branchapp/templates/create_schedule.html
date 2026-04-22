@@ -1,0 +1,404 @@
+{% extends "branch_nav.html" %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <!-- Header Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h2 class="mb-1 text-primary">
+                                <i class="fas fa-calendar-plus me-2"></i>Create Shift Schedule
+                            </h2>
+                            <p class="text-muted mb-0">
+                                Create a new 15-day shift schedule for {{ branch.branch_name }}
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <a href="{% url 'shift_schedule_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Schedules
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fas 
+                            {% if message.tags == 'success' %}fa-check-circle
+                            {% elif message.tags == 'error' %}fa-exclamation-circle
+                            {% elif message.tags == 'warning' %}fa-exclamation-triangle
+                            {% else %}fa-info-circle{% endif %} 
+                            me-3 fa-lg"></i>
+                        <div class="flex-grow-1">{{ message }}</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Form Card -->
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white py-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-white text-primary me-3">
+                            <i class="fas fa-calendar-alt fa-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">Schedule Details</h4>
+                            <p class="mb-0 opacity-75">Fill in the schedule information below</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-5">
+                    <form method="POST" id="scheduleForm">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger border-0 shadow-sm mb-4">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-exclamation-triangle fa-lg me-3 mt-1"></i>
+                                <div>
+                                    <h5 class="alert-heading mb-2">Please correct the following errors:</h5>
+                                    <ul class="mb-0 ps-3">
+                                        {% for field, errors in form.errors.items %}
+                                            {% for error in errors %}
+                                                <li>{{ field|title }}: {{ error }}</li>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Schedule Name -->
+                        <div class="mb-4">
+                            <div class="form-group">
+                                <label class="form-label fw-bold mb-2">
+                                    <i class="fas fa-heading me-2 text-primary"></i>Schedule Name
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-pen text-muted"></i>
+                                    </span>
+                                    {{ form.schedule_name }}
+                                </div>
+                                <div class="form-text mt-2">
+                                    <i class="fas fa-lightbulb me-1 text-warning"></i>
+                                    Example: "March 2024 - First Half" or "Team A Morning Shifts"
+                                </div>
+                                {% if form.schedule_name.errors %}
+                                <div class="alert alert-danger mt-2 py-2">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    {{ form.schedule_name.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Month & Year Row -->
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold mb-2">
+                                        <i class="fas fa-calendar me-2 text-primary"></i>Month
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="fas fa-calendar-alt text-muted"></i>
+                                        </span>
+                                        {{ form.month }}
+                                    </div>
+                                    {% if form.month.errors %}
+                                    <div class="alert alert-danger mt-2 py-2">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        {{ form.month.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold mb-2">
+                                        <i class="fas fa-calendar-check me-2 text-primary"></i>Year
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="fas fa-calendar-day text-muted"></i>
+                                        </span>
+                                        {{ form.year }}
+                                    </div>
+                                    {% if form.year.errors %}
+                                    <div class="alert alert-danger mt-2 py-2">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        {{ form.year.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Period Selection -->
+                        <div class="mb-5">
+                            <label class="form-label fw-bold mb-3">
+                                <i class="fas fa-clock me-2 text-primary"></i>Schedule Period
+                                <span class="text-danger">*</span>
+                            </label>
+                            
+                            <div class="row g-3">
+                                {% for value, label in form.period.field.choices %}
+                                    {% if value %}
+                                    <div class="col-md-6">
+                                        <div class="period-option card border-0 shadow-sm h-100 {% if form.period.value == value %}border-primary border-2{% endif %}"
+                                             onclick="selectPeriod('{{ value }}')">
+                                            <div class="card-body text-center py-4">
+                                                <div class="period-icon mb-3">
+                                                    {% if value == 'first_half' %}
+                                                    <div class="icon-circle bg-primary bg-opacity-10 text-primary mx-auto">
+                                                        <i class="fas fa-sun fa-2x"></i>
+                                                    </div>
+                                                    {% else %}
+                                                    <div class="icon-circle bg-warning bg-opacity-10 text-warning mx-auto">
+                                                        <i class="fas fa-moon fa-2x"></i>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                <h5 class="card-title mb-2">{{ label }}</h5>
+                                                <p class="card-text text-muted small mb-0">
+                                                    {% if value == 'first_half' %}
+                                                    1st - 15th of the month
+                                                    {% else %}
+                                                    16th - End of month
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                            <div class="card-footer border-0 bg-transparent text-center">
+                                                <div class="form-check d-inline-block">
+                                                    <input class="form-check-input" type="radio" 
+                                                           name="period" id="period_{{ value }}" 
+                                                           value="{{ value }}" 
+                                                           {% if form.period.value == value %}checked{% endif %}>
+                                                    <label class="form-check-label fw-medium" for="period_{{ value }}">
+                                                        Select this period
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            
+                            {% if form.period.errors %}
+                            <div class="alert alert-danger mt-3 py-2">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                {{ form.period.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="border-top pt-4 mt-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="window.history.back()">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </button>
+                                </div>
+                                <div>
+                                    <button type="reset" class="btn btn-light me-2">
+                                        <i class="fas fa-redo me-2"></i>Reset Form
+                                    </button>
+                                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                                        <i class="fas fa-save me-2"></i>Create Schedule
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="icon-circle bg-info bg-opacity-10 text-info me-3">
+                            <i class="fas fa-info-circle fa-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-2">About Shift Schedules</h5>
+                            <p class="text-muted mb-2">
+                                Shift schedules are created for 15-day periods. Once published, employees will be assigned 
+                                the same shift for the entire period. You can add or remove assignments until the schedule 
+                                is published.
+                            </p>
+                            <ul class="text-muted mb-0">
+                                <li><strong>First Half:</strong> Covers 1st to 15th of the selected month</li>
+                                <li><strong>Second Half:</strong> Covers 16th to the last day of the month</li>
+                                <li>Schedules can be edited in <strong>Draft</strong> status only</li>
+                                <li>After publishing, you can only view assignments</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .icon-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .period-option {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid #dee2e6;
+    }
+    
+    .period-option:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        border-color: #4e73df;
+    }
+    
+    .period-option.selected {
+        border-color: #4e73df;
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-right: none;
+    }
+    
+    .form-control {
+        border-left: none;
+        padding-left: 0;
+    }
+    
+    .form-control:focus {
+        border-left: none;
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        border-bottom: none;
+        border-radius: 15px 15px 0 0 !important;
+    }
+    
+    .alert {
+        border-radius: 10px;
+        border: none;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 8px;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-lg {
+        padding: 12px 30px;
+        font-weight: 600;
+    }
+    
+    .form-label {
+        color: #495057;
+        font-size: 15px;
+    }
+    
+    .form-text {
+        font-size: 13px;
+        color: #6c757d;
+    }
+    
+    .period-icon .icon-circle {
+        width: 70px;
+        height: 70px;
+    }
+</style>
+
+<script>
+    function selectPeriod(value) {
+        // Update radio button
+        document.querySelector(`input[name="period"][value="${value}"]`).checked = true;
+        
+        // Update visual selection
+        document.querySelectorAll('.period-option').forEach(option => {
+            option.classList.remove('selected', 'border-primary', 'border-2');
+        });
+        
+        const selectedOption = document.querySelector(`.period-option[onclick*="${value}"]`);
+        if (selectedOption) {
+            selectedOption.classList.add('selected', 'border-primary', 'border-2');
+        }
+    }
+    
+    // Initialize period selection on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectedPeriod = document.querySelector('input[name="period"]:checked');
+        if (selectedPeriod) {
+            selectPeriod(selectedPeriod.value);
+        }
+        
+        // Add input styling
+        document.querySelectorAll('.form-control, .form-select').forEach(input => {
+            input.classList.add('form-control-lg');
+            input.style.padding = '12px 15px';
+            input.style.fontSize = '15px';
+        });
+        
+        // Add animation to form
+        const form = document.getElementById('scheduleForm');
+        form.style.opacity = '0';
+        form.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            form.style.transition = 'all 0.5s ease';
+            form.style.opacity = '1';
+            form.style.transform = 'translateY(0)';
+        }, 100);
+    });
+</script>
+{% endblock %}

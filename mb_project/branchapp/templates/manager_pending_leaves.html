@@ -1,0 +1,425 @@
+{% extends 'branch_nav.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-dark fw-bold">Pending Leave Requests</h1>
+            <p class="text-muted mb-0">Review and manage employee leave applications</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" id="filterBtn" data-bs-toggle="collapse" data-bs-target="#filterSection">
+                <i class="fas fa-filter me-2"></i>Filters
+            </button>
+            <button class="btn btn-success" id="bulkApproveBtn" disabled>
+                <i class="fas fa-check-double me-2"></i>Bulk Approve
+            </button>
+            <button class="btn btn-danger" id="bulkRejectBtn" disabled>
+                <i class="fas fa-times-double me-2"></i>Bulk Reject
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-4 col-md-4">
+            <div class="card border-0 shadow-sm bg-warning bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">Pending</p>
+                            <h3 class="fw-bold mb-0 text-warning">{{ total_pending }}</h3>
+                        </div>
+                        <div class="icon-shape bg-warning text-white rounded-circle p-3">
+                            <i class="fas fa-clock fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-4 col-md-4">
+            <div class="card border-0 shadow-sm bg-success bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">Approved</p>
+                            <h3 class="fw-bold mb-0 text-success">{{ total_approved }}</h3>
+                        </div>
+                        <div class="icon-shape bg-success text-white rounded-circle p-3">
+                            <i class="fas fa-check-circle fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-4 col-md-4">
+            <div class="card border-0 shadow-sm bg-danger bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">Rejected</p>
+                            <h3 class="fw-bold mb-0 text-danger">{{ total_rejected }}</h3>
+                        </div>
+                        <div class="icon-shape bg-danger text-white rounded-circle p-3">
+                            <i class="fas fa-times-circle fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="collapse mb-4" id="filterSection">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="all" {% if current_filters.status == 'all' %}selected{% endif %}>All</option>
+                            <option value="pending" {% if current_filters.status == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="approved" {% if current_filters.status == 'approved' %}selected{% endif %}>Approved</option>
+                            <option value="rejected" {% if current_filters.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Leave Type</label>
+                        <select name="leave_type" class="form-select">
+                            <option value="">All Types</option>
+                            {% for type in leave_types %}
+                            <option value="{{ type.id }}" {% if current_filters.leave_type == type.id|stringformat:"s" %}selected{% endif %}>
+                                {{ type.leave_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">From Date</label>
+                        <input type="date" name="date_from" class="form-control" value="{{ current_filters.date_from }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">To Date</label>
+                        <input type="date" name="date_to" class="form-control" value="{{ current_filters.date_to }}">
+                    </div>
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Apply Filters
+                        </button>
+                        <a href="{% url 'manager_pending_leaves' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-redo me-2"></i>Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave Requests Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="leavesTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="40">
+                                <input type="checkbox" id="selectAll" class="form-check-input">
+                            </th>
+                            <th>Employee</th>
+                            <th>Leave Type</th>
+                            <th>Duration</th>
+                            <th>Days</th>
+                            <th>Applied Date</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in leaves %}
+                        <tr data-leave-id="{{ leave.leave_id }}" data-status="{{ leave.status }}">
+                            <td>
+                                {% if leave.status == 'pending' %}
+                                <input type="checkbox" class="form-check-input leave-checkbox" value="{{ leave.leave_id }}">
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle bg-primary bg-opacity-10 me-2">
+                                        <span class="text-primary">{{ leave.employee.full_name|first }}</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">{{ leave.employee.full_name }}</h6>
+                                        <small class="text-muted">{{ leave.employee.employee_code }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark">{{ leave.leave_type.leave_name }}</span>
+                            </td>
+                            <td>
+                                {{ leave.from_date|date:"M d" }} - {{ leave.to_date|date:"M d, Y" }}
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ leave.leave_days }} day{{ leave.leave_days|pluralize }}</span>
+                            </td>
+                            <td>
+                                {{ leave.applied_date|date:"M d, Y" }}
+                                <br>
+                                <small class="text-muted">{{ leave.applied_date|timesince }} ago</small>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-link text-primary" data-bs-toggle="tooltip" 
+                                        title="{{ leave.reason }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                            <td>
+                                {% if leave.status == 'pending' %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif leave.status == 'approved' %}
+                                <span class="badge bg-success">Approved</span>
+                                {% elif leave.status == 'rejected' %}
+                                <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'manager_leave_detail' leave.leave_id %}" 
+                                       class="btn btn-outline-primary" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if leave.status == 'pending' %}
+                                    <button type="button" class="btn btn-outline-success quick-approve" 
+                                            data-leave-id="{{ leave.leave_id }}" title="Quick Approve">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger quick-reject" 
+                                            data-leave-id="{{ leave.leave_id }}" title="Quick Reject">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center py-5">
+                                <i class="fas fa-calendar-times text-muted mb-3" style="font-size: 3rem;"></i>
+                                <p class="text-muted mb-0">No leave requests found</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Action Modal -->
+<div class="modal fade" id="bulkActionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bulkActionTitle">Bulk Approve Leaves</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to <span id="bulkActionText">approve</span> the selected leave requests?</p>
+                <div class="mb-3">
+                    <label class="form-label">Remarks (Optional)</label>
+                    <textarea class="form-control" id="bulkRemarks" rows="3"></textarea>
+                </div>
+                <div class="selected-count">
+                    <strong><span id="selectedCount">0</span></strong> request(s) selected
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmBulkAction">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.icon-shape {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.table th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+}
+
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Select All functionality
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.leave-checkbox');
+    const bulkApproveBtn = document.getElementById('bulkApproveBtn');
+    const bulkRejectBtn = document.getElementById('bulkRejectBtn');
+
+    function updateBulkButtons() {
+        const checked = document.querySelectorAll('.leave-checkbox:checked').length;
+        bulkApproveBtn.disabled = checked === 0;
+        bulkRejectBtn.disabled = checked === 0;
+    }
+
+    selectAll?.addEventListener('change', function() {
+        checkboxes.forEach(cb => {
+            cb.checked = this.checked;
+        });
+        updateBulkButtons();
+    });
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkButtons);
+    });
+
+    // Bulk action modal
+    const bulkModal = new bootstrap.Modal(document.getElementById('bulkActionModal'));
+    let currentAction = '';
+
+    bulkApproveBtn.addEventListener('click', function() {
+        currentAction = 'approve';
+        document.getElementById('bulkActionTitle').innerHTML = 'Bulk Approve Leaves';
+        document.getElementById('bulkActionText').innerHTML = 'approve';
+        document.getElementById('confirmBulkAction').className = 'btn btn-success';
+        document.getElementById('selectedCount').innerHTML = document.querySelectorAll('.leave-checkbox:checked').length;
+        bulkModal.show();
+    });
+
+    bulkRejectBtn.addEventListener('click', function() {
+        currentAction = 'reject';
+        document.getElementById('bulkActionTitle').innerHTML = 'Bulk Reject Leaves';
+        document.getElementById('bulkActionText').innerHTML = 'reject';
+        document.getElementById('confirmBulkAction').className = 'btn btn-danger';
+        document.getElementById('selectedCount').innerHTML = document.querySelectorAll('.leave-checkbox:checked').length;
+        bulkModal.show();
+    });
+
+    document.getElementById('confirmBulkAction').addEventListener('click', function() {
+        const selectedIds = Array.from(document.querySelectorAll('.leave-checkbox:checked')).map(cb => cb.value);
+        const remarks = document.getElementById('bulkRemarks').value;
+
+        fetch('{% url "manager_bulk_action" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                leave_ids: selectedIds,
+                action: currentAction,
+                remarks: remarks
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bulkModal.hide();
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    });
+
+    // Quick approve/reject
+    document.querySelectorAll('.quick-approve').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const leaveId = this.dataset.leaveId;
+            if (confirm('Approve this leave request?')) {
+                fetch('{% url "manager_bulk_action" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        leave_ids: [leaveId],
+                        action: 'approve',
+                        remarks: ''
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
+            }
+        });
+    });
+
+    document.querySelectorAll('.quick-reject').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const leaveId = this.dataset.leaveId;
+            if (confirm('Reject this leave request?')) {
+                fetch('{% url "manager_bulk_action" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        leave_ids: [leaveId],
+                        action: 'reject',
+                        remarks: ''
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

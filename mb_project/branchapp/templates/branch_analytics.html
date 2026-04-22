@@ -1,0 +1,300 @@
+<!-- branchapp/templates/branch_analytics.html -->
+{% extends "branch_nav.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fa fa-bar-chart"></i> Branch Analytics Dashboard</h2>
+        </div>
+    </div>
+    
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="form-inline">
+                        <div class="form-group mr-3">
+                            <label for="month" class="mr-2">Month:</label>
+                            <select name="month" id="month" class="form-control">
+                                {% for m in months %}
+                                <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>
+                                    {{ m }} - 
+                                    {% if m == 1 %}January
+                                    {% elif m == 2 %}February
+                                    {% elif m == 3 %}March
+                                    {% elif m == 4 %}April
+                                    {% elif m == 5 %}May
+                                    {% elif m == 6 %}June
+                                    {% elif m == 7 %}July
+                                    {% elif m == 8 %}August
+                                    {% elif m == 9 %}September
+                                    {% elif m == 10 %}October
+                                    {% elif m == 11 %}November
+                                    {% elif m == 12 %}December
+                                    {% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mr-3">
+                            <label for="year" class="mr-2">Year:</label>
+                            <select name="year" id="year" class="form-control">
+                                {% for y in years %}
+                                <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>
+                                    {{ y }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Apply Filter</button>
+                        <a href="{% url 'branch_analytics' %}" class="btn btn-secondary ml-2">Reset</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- REPORT 1: Employee Statistics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📊 Employee Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h3>{{ total_employees }}</h3>
+                                    <p class="mb-0">Total Active Employees</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h3>{{ monthly_count }}</h3>
+                                    <p class="mb-0">Monthly Salary</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <h3>{{ daily_count }}</h3>
+                                    <p class="mb-0">Daily Wage</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-secondary text-white">
+                                <div class="card-body text-center">
+                                    <h3>{{ employees_by_designation|length }}</h3>
+                                    <p class="mb-0">Designations</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Employees by Designation -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6>Employees by Designation</h6>
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Designation</th>
+                                        <th>Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in employees_by_designation %}
+                                    <tr>
+                                        <td>{{ item.designation__role|default:"Not Assigned" }}</td>
+                                        <td>{{ item.count }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="2" class="text-center">No employees found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- REPORT 2: Monthly Payroll Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">💰 Payroll Summary - {{ month_name }} {{ selected_year }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <h4>₹{{ total_payroll|floatformat:2 }}</h4>
+                                    <p class="mb-0 text-muted">Total Net Salary</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <h4>₹{{ total_basic|floatformat:2 }}</h4>
+                                    <p class="mb-0 text-muted">Total Basic Salary</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-danger">
+                                <div class="card-body text-center">
+                                    <h4>₹{{ total_deductions|floatformat:2 }}</h4>
+                                    <p class="mb-0 text-muted">Total Deductions</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-info">
+                                <div class="card-body text-center">
+                                    <h4>₹{{ avg_salary|floatformat:2 }}</h4>
+                                    <p class="mb-0 text-muted">Average Salary</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Payrolls -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6>Recent Payroll Records</h6>
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Month</th>
+                                        <th>Year</th>
+                                        <th>Net Salary</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payroll in recent_payrolls %}
+                                    <tr>
+                                        <td>{{ payroll.employee.full_name }}</td>
+                                        <td>{{ payroll.month }}</td>
+                                        <td>{{ payroll.year }}</td>
+                                        <td>₹{{ payroll.net_salary|floatformat:2 }}</td>
+                                        <td>
+                                            {% if payroll.payment_status == 'paid' %}
+                                            <span class="badge badge-success">Paid</span>
+                                            {% else %}
+                                            <span class="badge badge-warning">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">No payroll records found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- REPORT 3: Leave Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">📅 Leave Summary - {{ month_name }} {{ selected_year }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h4>{{ total_leave_requests }}</h4>
+                                    <p class="mb-0 text-muted">Total Leave Requests</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h4>{{ employees_on_leave }}</h4>
+                                    <p class="mb-0 text-muted">Employees on Leave</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h4>{{ total_leave_days }}</h4>
+                                    <p class="mb-0 text-muted">Total Leave Days</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Leaves by Type -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6>Leaves by Type</h6>
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Leave Type</th>
+                                        <th>Number of Requests</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in leaves_by_type %}
+                                    <tr>
+                                        <td>{{ item.leave_type__leave_name }}</td>
+                                        <td>{{ item.count }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="2" class="text-center">No leave requests for this month</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+  
+</div>
+
+<style>
+    @media print {
+        .btn, form, .navbar, footer {
+            display: none !important;
+        }
+        .card {
+            break-inside: avoid;
+        }
+    }
+</style>
+{% endblock %}

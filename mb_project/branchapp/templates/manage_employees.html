@@ -1,0 +1,597 @@
+{% extends "branch_nav.html" %}
+
+{% block content %}
+    <!-- Employee Statistics Cards -->
+    <div class="dashboard-cards">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Total Employees</div>
+                <div class="card-icon attendance-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            <div class="card-value">{{ employees.count }}</div>
+            <div class="card-desc">Employees in {{ branch.branch_name }}</div>
+            <div class="card-actions">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+                    <i class="fas fa-user-plus"></i> Add Employee
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Active Employees</div>
+                <div class="card-icon leave-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+            </div>
+            <div class="card-value">{{ active_count }}</div>
+            <div class="card-desc">Currently working employees</div>
+            <div class="card-actions">
+                <button class="btn btn-secondary">
+                    <i class="fas fa-list"></i> View Active
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Monthly Salary</div>
+                <div class="card-icon shift-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+            </div>
+            <div class="card-value">{{ monthly_count }}</div>
+            <div class="card-desc">Employees on monthly payroll</div>
+            <div class="card-actions">
+                <button class="btn btn-secondary">
+                    <i class="fas fa-money-bill-wave"></i> Salary Report
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Branch</div>
+                <div class="card-icon report-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+            </div>
+            <div class="card-value">{{ branch.branch_name }}</div>
+            <div class="card-desc">Current branch location</div>
+            <div class="card-actions">
+                <button class="btn btn-secondary">
+                    <i class="fas fa-info-circle"></i> Branch Info
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Management Section -->
+    <div class="module-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-user-friends"></i> Employee Management
+            </h2>
+            <div>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+                    <i class="fas fa-user-plus"></i> Add New Employee
+                </button>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" 
+                 style="background-color: {% if message.tags == 'success' %}#d5f4e6{% elif message.tags == 'error' %}#fadbd8{% else %}#fdebd0{% endif %}; 
+                        color: {% if message.tags == 'success' %}#27ae60{% elif message.tags == 'error' %}#e74c3c{% else %}#f39c12{% endif %};
+                        border: none; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Employee Code</th>
+                        <th>Full Name</th>
+                        <th>Phone</th>
+                        <th>Designation</th>
+                        <th>Joining Date</th>
+                        <th>Salary</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    <tr style="{% if employee.status == 'inactive' %}opacity: 0.7; background-color: #f9f9f9;{% endif %}">
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>#{{ employee.employee_code }}</strong></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 35px; height: 35px; background-color: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                    {{ employee.full_name|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <strong>{{ employee.full_name }}</strong><br>
+                                    <small style="color: #95a5a6;">{{ employee.login.email }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ employee.phone }}</td>
+                        <td>{{ employee.designation.role|default:"Not Assigned" }}</td>
+                        <td>{{ employee.joining_date|date:"d M Y" }}</td>
+                        <td>
+                            ₹{{ employee.base_salary }}<br>
+                            <small style="color: #95a5a6;">{{ employee.salary_type|title }}</small>
+                        </td>
+                        <td>
+                            <span class="status {% if employee.status == 'active' %}status-approved{% else %}status-rejected{% endif %}">
+                                {{ employee.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" 
+                                        data-bs-toggle="modal" data-bs-target="#editEmployeeModal{{ employee.employee_id }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                {% if employee.status == 'active' %}
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px; background-color: #e74c3c; color: white;" 
+                                        data-bs-toggle="modal" data-bs-target="#deactivateModal{{ employee.employee_id }}">
+                                    <i class="fas fa-user-slash"></i>
+                                </button>
+                                {% else %}
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px; background-color: #2ecc71; color: white;" 
+                                        data-bs-toggle="modal" data-bs-target="#activateModal{{ employee.employee_id }}">
+                                    <i class="fas fa-user-check"></i>
+                                </button>
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px; background-color: #c0392b; color: white;" 
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal{{ employee.employee_id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 40px; color: #95a5a6;">
+                            <i class="fas fa-users-slash" style="font-size: 48px; margin-bottom: 15px;"></i><br>
+                            <strong>No Employees Found</strong><br>
+                            <small>Start by adding your first employee</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Employee Modal -->
+    <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #2c3e50; color: white;">
+                    <h5 class="modal-title" id="addEmployeeModalLabel">
+                        <i class="fas fa-user-plus me-2"></i>Add New Employee
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'add_employee' %}" id="addEmployeeForm">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="row" style="display: flex; flex-wrap: wrap; margin: -10px;">
+                            <!-- Display form errors if any -->
+                            {% if form.errors %}
+                            <div style="width: 100%; padding: 10px; margin-bottom: 15px;">
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    Please correct the errors below.
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Employee Code</label>
+                                {{ form.employee_code }}
+                                <small style="color: #95a5a6; font-size: 12px;">Auto-generated</small>
+                                {% if form.employee_code.errors %}
+                                <div style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+                                    {{ form.employee_code.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Email Address *</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                <div style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+                                    {{ form.email.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Password *</label>
+                                {{ form.password }}
+                                {% if form.password.errors %}
+                                <div style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+                                    {{ form.password.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Confirm Password *</label>
+                                {{ form.confirm_password }}
+                                {% if form.confirm_password.errors %}
+                                <div style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+                                    {{ form.confirm_password.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-8" style="padding: 10px; flex: 0 0 66.66%;">
+                                <label class="form-label" style="font-weight: 600;">Full Name *</label>
+                                {{ form.full_name }}
+                                {% if form.full_name.errors %}
+                                <div style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+                                    {{ form.full_name.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4" style="padding: 10px; flex: 0 0 33.33%;">
+                                <label class="form-label" style="font-weight: 600;">Phone *</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                <div style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+                                    {{ form.phone.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Designation</label>
+                                {{ form.designation }}
+                                {% if form.designation.errors %}
+                                <div style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+                                    {{ form.designation.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Joining Date *</label>
+                                {{ form.joining_date }}
+                                {% if form.joining_date.errors %}
+                                <div style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+                                    {{ form.joining_date.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Salary Type *</label>
+                                {{ form.salary_type }}
+                                {% if form.salary_type.errors %}
+                                <div style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+                                    {{ form.salary_type.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Base Salary *</label>
+                                <div style="display: flex;">
+                                    <span style="padding: 8px 12px; background-color: #ecf0f1; border: 1px solid #ddd; border-right: none; border-radius: 5px 0 0 5px;">₹</span>
+                                    {{ form.base_salary }}
+                                </div>
+                                {% if form.base_salary.errors %}
+                                <div style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+                                    {{ form.base_salary.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Status *</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                <div style="color: #dc3545; font-size: 12px; margin-top: 5px;">
+                                    {{ form.status.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Add Employee
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Employee Modals and other modals -->
+    {% for employee in employees %}
+    <div class="modal fade" id="editEmployeeModal{{ employee.employee_id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #f39c12; color: white;">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-edit me-2"></i>Edit Employee: {{ employee.full_name }}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'edit_employee' employee.employee_id %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="row" style="display: flex; flex-wrap: wrap; margin: -10px;">
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Employee Code</label>
+                                <input type="text" name="employee_code" value="{{ employee.employee_code }}" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; background-color: #f8f9fa;" 
+                                       maxlength="20" readonly>
+                            </div>
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Email Address *</label>
+                                <input type="email" name="email" value="{{ employee.login.email }}" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;" 
+                                       required>
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">New Password</label>
+                                <input type="password" name="password" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;" 
+                                       placeholder="Leave blank to keep current">
+                            </div>
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Confirm Password</label>
+                                <input type="password" name="confirm_password" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;" 
+                                       placeholder="Leave blank to keep current">
+                            </div>
+                            
+                            <div class="col-md-8" style="padding: 10px; flex: 0 0 66.66%;">
+                                <label class="form-label" style="font-weight: 600;">Full Name *</label>
+                                <input type="text" name="full_name" value="{{ employee.full_name }}" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;" 
+                                       maxlength="150" required>
+                            </div>
+                            <div class="col-md-4" style="padding: 10px; flex: 0 0 33.33%;">
+                                <label class="form-label" style="font-weight: 600;">Phone *</label>
+                                <input type="text" name="phone" value="{{ employee.phone }}" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;" 
+                                       maxlength="15" required>
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Designation</label>
+                                <select name="designation" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                                    <option value="">Select Designation</option>
+                                    {% for designation in form.designation.field.queryset %}
+                                    <option value="{{ designation.id }}" 
+                                            {% if employee.designation.id == designation.id %}selected{% endif %}>
+                                        {{ designation.designation_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Joining Date *</label>
+                                <input type="date" name="joining_date" value="{{ employee.joining_date|date:'Y-m-d' }}" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;" 
+                                       required>
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Salary Type *</label>
+                                <select name="salary_type" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;" required>
+                                    <option value="monthly" {% if employee.salary_type == 'monthly' %}selected{% endif %}>Monthly</option>
+                                    <option value="daily" {% if employee.salary_type == 'daily' %}selected{% endif %}>Daily</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Base Salary *</label>
+                                <div style="display: flex;">
+                                    <span style="padding: 8px 12px; background-color: #ecf0f1; border: 1px solid #ddd; border-right: none; border-radius: 5px 0 0 5px;">₹</span>
+                                    <input type="number" name="base_salary" value="{{ employee.base_salary }}" 
+                                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 0 5px 5px 0;" 
+                                           step="0.01" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6" style="padding: 10px; flex: 0 0 50%;">
+                                <label class="form-label" style="font-weight: 600;">Status *</label>
+                                <select name="status" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;" required>
+                                    <option value="active" {% if employee.status == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="inactive" {% if employee.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" style="background-color: #f39c12; border-color: #f39c12;">
+                            <i class="fas fa-save me-2"></i>Update Employee
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deactivate Modal -->
+    <div class="modal fade" id="deactivateModal{{ employee.employee_id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #e74c3c; color: white;">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-slash me-2"></i>Deactivate Employee
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'delete_employee' employee.employee_id %}">
+                    {% csrf_token %}
+                    <div class="modal-body" style="text-align: center; padding: 30px;">
+                        <div style="width: 60px; height: 60px; background-color: #e74c3c; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin: 0 auto 20px;">
+                            <i class="fas fa-user-slash"></i>
+                        </div>
+                        <h5>Deactivate {{ employee.full_name }}?</h5>
+                        <p style="color: #95a5a6;">
+                            Employee ID: <strong>#{{ employee.employee_code }}</strong><br>
+                            This will mark the employee as inactive.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" style="background-color: #e74c3c; border-color: #e74c3c;">
+                            <i class="fas fa-ban me-2"></i>Deactivate
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activate Modal -->
+    <div class="modal fade" id="activateModal{{ employee.employee_id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #2ecc71; color: white;">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-check me-2"></i>Activate Employee
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'restore_employee' employee.employee_id %}">
+                    {% csrf_token %}
+                    <div class="modal-body" style="text-align: center; padding: 30px;">
+                        <div style="width: 60px; height: 60px; background-color: #2ecc71; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin: 0 auto 20px;">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <h5>Activate {{ employee.full_name }}?</h5>
+                        <p style="color: #95a5a6;">
+                            Employee ID: <strong>#{{ employee.employee_code }}</strong><br>
+                            This will mark the employee as active.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" style="background-color: #2ecc71; border-color: #2ecc71;">
+                            <i class="fas fa-check me-2"></i>Activate
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Permanent Delete Modal -->
+    <div class="modal fade" id="deleteModal{{ employee.employee_id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style="border: 2px solid #c0392b;">
+                <div class="modal-header" style="background-color: #c0392b; color: white;">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Permanently Delete
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'permanent_delete_employee' employee.employee_id %}">
+                    {% csrf_token %}
+                    <div class="modal-body" style="text-align: center; padding: 30px;">
+                        <div style="color: #c0392b; font-size: 48px; margin-bottom: 20px;">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <h5 style="color: #c0392b;">Warning: Permanent Deletion</h5>
+                        <div style="background-color: #fadbd8; color: #e74c3c; padding: 10px; border-radius: 5px; margin: 15px 0;">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            This action cannot be undone!
+                        </div>
+                        <p>
+                            You are about to permanently delete:<br>
+                            <strong>{{ employee.full_name }}</strong><br>
+                            <small style="color: #95a5a6;">(#{{ employee.employee_code }})</small>
+                        </p>
+                        <div style="margin-top: 20px; text-align: left;">
+                            <input type="checkbox" id="confirmDelete{{ employee.employee_id }}" required 
+                                   style="margin-right: 10px;">
+                            <label for="confirmDelete{{ employee.employee_id }}" style="color: #c0392b;">
+                                I understand this is permanent
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" style="background-color: #c0392b; border-color: #c0392b;" 
+                                id="deleteBtn{{ employee.employee_id }}" disabled>
+                            <i class="fas fa-trash me-2"></i>Permanently Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Add Bootstrap and Scripts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Make Employees nav item active
+        document.addEventListener('DOMContentLoaded', function() {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.querySelector('a[href*="employees"]')) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Handle delete confirmation checkboxes
+            {% for employee in employees %}
+            const checkbox{{ employee.employee_id }} = document.getElementById('confirmDelete{{ employee.employee_id }}');
+            const deleteBtn{{ employee.employee_id }} = document.getElementById('deleteBtn{{ employee.employee_id }}');
+            if (checkbox{{ employee.employee_id }} && deleteBtn{{ employee.employee_id }}) {
+                checkbox{{ employee.employee_id }}.addEventListener('change', function() {
+                    deleteBtn{{ employee.employee_id }}.disabled = !this.checked;
+                });
+            }
+            {% endfor %}
+            
+            // Show modal if there are form errors (for page reload)
+            {% if form.errors %}
+            var addModal = new bootstrap.Modal(document.getElementById('addEmployeeModal'));
+            addModal.show();
+            {% endif %}
+            
+            // Make all employee_code fields readonly
+            document.querySelectorAll('input[name="employee_code"]').forEach(function(input) {
+                input.setAttribute('readonly', 'readonly');
+                input.style.backgroundColor = '#f8f9fa';
+            });
+        });
+    </script>
+
+{% endblock %}

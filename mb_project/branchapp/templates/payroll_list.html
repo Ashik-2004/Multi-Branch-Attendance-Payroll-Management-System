@@ -1,0 +1,144 @@
+<!-- branchapp/templates/branchapp/payroll_list.html -->
+{% extends "branch_nav.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Payroll Management</h2>
+        </div>
+    </div>
+    
+    <!-- Filter Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row">
+                        <div class="col-md-3">
+                            <label>Month</label>
+                            <select name="month" class="form-control">
+                                {% for m in months %}
+                                <option value="{{ m }}" {% if month == m %}selected{% endif %}>
+                                    {{ m }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label>Year</label>
+                            <select name="year" class="form-control">
+                                {% for y in years %}
+                                <option value="{{ y }}" {% if year == y %}selected{% endif %}>
+                                    {{ y }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label>&nbsp;</label><br>
+                            <button type="submit" class="btn btn-primary">View</button>
+                            <a href="{% url 'process_payroll' %}" class="btn btn-success">Process New</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5>Total Employees</h5>
+                    <h3>{{ total_employees }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5>Total Net Salary</h5>
+                    <h3>₹{{ total_net_salary|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5>Paid Employees</h5>
+                    <h3>{{ paid_count }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5>Pending</h5>
+                    <h3>{{ total_employees|add:"-"|add:paid_count }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payroll Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>{{ month_name }} {{ year }} - Payroll Details</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Employee Code</th>
+                                <th>Employee Name</th>
+                                <th>Basic Salary</th>
+                                <th>Present</th>
+                                <th>Absent</th>
+                                <th>Leaves</th>
+                                <th>Deduction</th>
+                                <th>Net Salary</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payroll in payrolls %}
+                            <tr>
+                                <td>{{ payroll.employee.employee_code }}</td>
+                                <td>{{ payroll.employee.full_name }}</td>
+                                <td>₹{{ payroll.basic_salary|floatformat:2 }}</td>
+                                <td>{{ payroll.present_days }}</td>
+                                <td>{{ payroll.absent_days }}</td>
+                                <td>{{ payroll.leave_days }}</td>
+                                <td>₹{{ payroll.absent_deduction|floatformat:2 }}</td>
+                                <td><strong>₹{{ payroll.net_salary|floatformat:2 }}</strong></td>
+                                <td>
+                                    {% if payroll.payment_status == 'paid' %}
+                                    <span class="badge badge-success">Paid</span>
+                                    {% else %}
+                                    <span class="badge badge-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'payroll_detail' payroll.payroll_id %}" class="btn btn-sm btn-info">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="10" class="text-center">No payroll records found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

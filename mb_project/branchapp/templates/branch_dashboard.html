@@ -1,0 +1,445 @@
+{% extends "branch_nav.html" %}
+{%block content%}
+<div class="dashboard-cards">
+                <!-- Attendance Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Staff Attendance</h3>
+                        <div class="card-icon attendance-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">42/48</div>
+                    <div class="card-desc">Present staff today. 4 late arrivals, 2 absent.</div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-edit"></i> Approve Corrections
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Leave Management Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Leave Requests</h3>
+                        <div class="card-icon leave-icon">
+                            <i class="fas fa-calendar-times"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">7 Pending</div>
+                    <div class="card-desc">3 vacation, 2 sick leaves, 2 personal leaves awaiting approval.</div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-check-circle"></i> Review Requests
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-chart-pie"></i> Leave Summary
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Shift Scheduling Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Shift Scheduling</h3>
+                        <div class="card-icon shift-icon">
+                            <i class="fas fa-calendar-week"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">5 Conflicts</div>
+                    <div class="card-desc">3 shift mismatches, 2 unassigned shifts for next week.</div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Assign Shifts
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-sync-alt"></i> Check Compliance
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Daily Reports Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Daily Reports</h3>
+                        <div class="card-icon report-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">92%</div>
+                    <div class="card-desc">Task completion rate today. 4 pending tasks.</div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-file-alt"></i> Generate Report
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-download"></i> Export Data
+                        </button>
+                    </div>
+                </div>
+            </div> 
+
+            <!-- Staff Attendance View Module -->
+            <div class="module-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-user-clock"></i> Real-time Staff Attendance
+                    </h2>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Status</th>
+                                <th>Hours</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Sarah Johnson</td>
+                                <td>08:55 AM</td>
+                                <td>05:10 PM</td>
+                                <td><span class="status status-present">Present</span></td>
+                                <td>8.25</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i> Correct
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Michael Chen</td>
+                                <td>09:15 AM</td>
+                                <td>-</td>
+                                <td><span class="status status-present">Present (Late)</span></td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i> Correct
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Emma Wilson</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td><span class="status status-absent">Absent</span></td>
+                                <td>0</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i> Approve
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>David Brown</td>
+                                <td>08:45 AM</td>
+                                <td>05:05 PM</td>
+                                <td><span class="status status-present">Present</span></td>
+                                <td>8.33</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i> Correct
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Lisa Rodriguez</td>
+                                <td>08:50 AM</td>
+                                <td>02:30 PM</td>
+                                <td><span class="status status-present">Half Day</span></td>
+                                <td>5.67</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i> Correct
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value">87.5%</div>
+                        <div class="stat-label">Attendance Rate</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">4</div>
+                        <div class="stat-label">Late Arrivals</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">2</div>
+                        <div class="stat-label">Absent Today</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Pending Approvals</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leave Management Module -->
+            <div class="module-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-calendar-alt"></i> Leave Management
+                    </h2>
+                    <div>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus"></i> New Leave
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Leave Type</th>
+                                <th>Dates</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Robert Kim</td>
+                                <td>Vacation</td>
+                                <td>Jun 15 - Jun 20, 2023</td>
+                                <td>5 days</td>
+                                <td><span class="status status-pending">Pending</span></td>
+                                <td>
+                                    <button class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px; margin-left: 5px;">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Maria Garcia</td>
+                                <td>Sick Leave</td>
+                                <td>Jun 12 - Jun 13, 2023</td>
+                                <td>2 days</td>
+                                <td><span class="status status-pending">Pending</span></td>
+                                <td>
+                                    <button class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px; margin-left: 5px;">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>James Wilson</td>
+                                <td>Personal Leave</td>
+                                <td>Jun 18, 2023</td>
+                                <td>1 day</td>
+                                <td><span class="status status-approved">Approved</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Sophie Lee</td>
+                                <td>Vacation</td>
+                                <td>Jun 25 - Jun 30, 2023</td>
+                                <td>6 days</td>
+                                <td><span class="status status-pending">Pending</span></td>
+                                <td>
+                                    <button class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px; margin-left: 5px;">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Thomas Clark</td>
+                                <td>Maternity Leave</td>
+                                <td>Jul 1 - Sep 30, 2023</td>
+                                <td>92 days</td>
+                                <td><span class="status status-approved">Approved</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Shift Scheduling Module -->
+            <div class="module-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-calendar-week"></i> Shift Scheduling
+                    </h2>
+                    <div>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create Schedule
+                        </button>
+                        <button class="btn btn-secondary" style="margin-left: 10px;">
+                            <i class="fas fa-file-export"></i> Export
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Assigned Shift</th>
+                                <th>Actual Attendance</th>
+                                <th>Compliance</th>
+                                <th>Next Week Shift</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Sarah Johnson</td>
+                                <td>Morning (9 AM - 5 PM)</td>
+                                <td>8:55 AM - 5:10 PM</td>
+                                <td><span class="status status-approved">Compliant</span></td>
+                                <td>Morning (9 AM - 5 PM)</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Michael Chen</td>
+                                <td>Morning (9 AM - 5 PM)</td>
+                                <td>9:15 AM - </td>
+                                <td><span class="status status-pending">Late Arrival</span></td>
+                                <td>Evening (1 PM - 9 PM)</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Emma Wilson</td>
+                                <td>Morning (9 AM - 5 PM)</td>
+                                <td>Absent</td>
+                                <td><span class="status status-rejected">Non-compliant</span></td>
+                                <td>Morning (9 AM - 5 PM)</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>David Brown</td>
+                                <td>Evening (1 PM - 9 PM)</td>
+                                <td>8:45 AM - 5:05 PM</td>
+                                <td><span class="status status-rejected">Shift Mismatch</span></td>
+                                <td>Evening (1 PM - 9 PM)</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Lisa Rodriguez</td>
+                                <td>Morning (9 AM - 5 PM)</td>
+                                <td>8:50 AM - 2:30 PM</td>
+                                <td><span class="status status-pending">Half Day</span></td>
+                                <td>Morning (9 AM - 5 PM)</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Daily Reports Module -->
+            <div class="module-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-chart-bar"></i> Daily Reports
+                    </h2>
+                    <div>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-calendar-day"></i> Today's Report
+                        </button>
+                        <button class="btn btn-secondary" style="margin-left: 10px;">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value">48</div>
+                        <div class="stat-label">Total Staff</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">42</div>
+                        <div class="stat-label">Present Today</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">4</div>
+                        <div class="stat-label">Late Arrivals</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">2</div>
+                        <div class="stat-label">Absent Today</div>
+                    </div>
+                </div>
+                <div style="margin-top: 25px;">
+                    <h3 style="margin-bottom: 15px; color: var(--primary);">Task Completion Summary</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-value">92%</div>
+                            <div class="stat-label">Completion Rate</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">46</div>
+                            <div class="stat-label">Tasks Assigned</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">42</div>
+                            <div class="stat-label">Tasks Completed</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">4</div>
+                            <div class="stat-label">Pending Tasks</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p>Branch Manager HR Dashboard • Last updated: Today, 4:30 PM</p>
+                <p>© 2023 Company Name. All rights reserved.</p>
+            </div>
+        </div>
+        {%endblock%}

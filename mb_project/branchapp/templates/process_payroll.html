@@ -1,0 +1,70 @@
+<!-- branchapp/templates/branchapp/process_payroll.html -->
+{% extends "branch_nav.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Process Payroll</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label>Select Month</label>
+                            <select name="month" class="form-control" required>
+                                {% for m in months %}
+                                <option value="{{ m }}" {% if current_month == m %}selected{% endif %}>
+                                    {{ m }} - 
+                                    {% if m == 1 %}January
+                                    {% elif m == 2 %}February
+                                    {% elif m == 3 %}March
+                                    {% elif m == 4 %}April
+                                    {% elif m == 5 %}May
+                                    {% elif m == 6 %}June
+                                    {% elif m == 7 %}July
+                                    {% elif m == 8 %}August
+                                    {% elif m == 9 %}September
+                                    {% elif m == 10 %}October
+                                    {% elif m == 11 %}November
+                                    {% elif m == 12 %}December
+                                    {% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Select Year</label>
+                            <select name="year" class="form-control" required>
+                                {% for y in years %}
+                                <option value="{{ y }}" {% if current_year == y %}selected{% endif %}>
+                                    {{ y }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <strong>Note:</strong> This will calculate salaries based on:
+                            <ul>
+                                <li>Monthly/Daily salary type</li>
+                                <li>Present days from attendance</li>
+                                <li>Approved leave days</li>
+                                <li>Absent days (without leave) will be deducted</li>
+                                <li>Holidays are excluded from working days</li>
+                            </ul>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Process Payroll</button>
+                        <a href="{% url 'payroll_list' %}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

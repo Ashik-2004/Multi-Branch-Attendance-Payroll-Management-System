@@ -1,0 +1,124 @@
+<!-- branchapp/templates/branchapp/payroll_detail.html -->
+{% extends "branch_nav.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Payroll Details - {{ month_name }} {{ payroll.year }}</h4>
+                </div>
+                <div class="card-body">
+                    
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <h5>Employee Information</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Name:</th>
+                                    <td>{{ payroll.employee.full_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Employee Code:</th>
+                                    <td>{{ payroll.employee.employee_code }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Designation:</th>
+                                    <td>{{ payroll.employee.designation.role }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Salary Type:</th>
+                                    <td>{{ payroll.salary_type|title }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-6">
+                            <h5>Payment Status</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        {% if payroll.payment_status == 'paid' %}
+                                        <span class="badge badge-success">Paid</span>
+                                        {% else %}
+                                        <span class="badge badge-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if payroll.payment_date %}
+                                <tr>
+                                    <th>Payment Date:</th>
+                                    <td>{{ payroll.payment_date }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <h5>Attendance Summary</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Total Days in Month</th>
+                            <td>{{ payroll.total_days }}</td>
+                        </tr>
+                        <tr>
+                            <th>Holidays</th>
+                            <td>{{ payroll.holidays }}</td>
+                        </tr>
+                        <tr>
+                            <th>Present Days</th>
+                            <td>{{ payroll.present_days }}</td>
+                        </tr>
+                        <tr>
+                            <th>Approved Leaves</th>
+                            <td>{{ payroll.leave_days }}</td>
+                        </tr>
+                        <tr>
+                            <th>Absent Days</th>
+                            <td>{{ payroll.absent_days }}</td>
+                        </tr>
+                        <tr>
+                            <th>Working Days</th>
+                            <td>{{ payroll.total_days|add:"-"|add:payroll.holidays }}</td>
+                        </tr>
+                        <tr>
+                            <th>Attendance Percentage</th>
+                            <td>{{ attendance_percent }}%</td>
+                        </tr>
+                    </table>
+                    
+                    <h5>Salary Calculation</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Basic Salary</th>
+                            <td>₹{{ payroll.basic_salary|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Absent Deduction</th>
+                            <td class="text-danger">- ₹{{ payroll.absent_deduction|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Net Salary</th>
+                            <td><strong>₹{{ payroll.net_salary|floatformat:2 }}</strong></td>
+                        </tr>
+                    </table>
+                    
+                    {% if payroll.payment_status == 'pending' %}
+                    <form method="post" action="{% url 'update_payment_status' payroll.payroll_id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success" onclick="return confirm('Mark this payroll as paid?')">
+                            Mark as Paid
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    <a href="{% url 'payroll_list' %}?month={{ payroll.month }}&year={{ payroll.year }}" class="btn btn-secondary mt-3">
+                        Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

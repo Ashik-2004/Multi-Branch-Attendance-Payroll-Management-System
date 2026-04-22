@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branch Manager - HR Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add to your base template's head section -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+
+<!-- Add before closing body tag -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <style>
+        .nav-item a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgb(249, 245, 245);
+    text-decoration: none;
+}
+.nav-item a:hover {
+    color: #0d6efd;
+}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --gray: #95a5a6;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .dashboard_container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: var(--primary);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .logo h2 {
+            margin-left: 10px;
+            font-weight: 600;
+        }
+
+        .logo i {
+            font-size: 24px;
+            color: var(--secondary);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--secondary);
+        }
+
+        .nav-item i {
+            width: 30px;
+            font-size: 18px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .header h1 {
+            color: var(--primary);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        /* Dashboard Cards */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: white;
+        }
+
+        .attendance-icon {
+            background-color: var(--secondary);
+        }
+
+        .leave-icon {
+            background-color: var(--warning);
+        }
+
+        .shift-icon {
+            background-color: var(--success);
+        }
+
+        .report-icon {
+            background-color: var(--danger);
+        }
+
+        .card-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .card-desc {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: var(--light);
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: #d5dbdb;
+        }
+
+        /* Module Sections */
+        .module-section {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section-title {
+            font-size: 22px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--secondary);
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px;
+            background-color: #f8f9fa;
+            color: var(--primary);
+            font-weight: 600;
+            border-bottom: 2px solid #eee;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-present {
+            background-color: #d5f4e6;
+            color: #27ae60;
+        }
+
+        .status-absent {
+            background-color: #fadbd8;
+            color: #e74c3c;
+        }
+
+        .status-pending {
+            background-color: #fdebd0;
+            color: #f39c12;
+        }
+
+        .status-approved {
+            background-color: #d5f4e6;
+            color: #27ae60;
+        }
+
+        .status-rejected {
+            background-color: #fadbd8;
+            color: #e74c3c;
+        }
+
+        /* Charts */
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 14px;
+            border-top: 1px solid #eee;
+            margin-top: 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .logo h2, .nav-item span {
+                display: none;
+            }
+            
+            .logo {
+                justify-content: center;
+                padding: 0 0 20px;
+            }
+            
+            .nav-item {
+                justify-content: center;
+                padding: 20px 0;
+            }
+            
+            .nav-item i {
+                width: auto;
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard_container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                display: flex;
+                padding: 10px;
+            }
+            
+            .logo {
+                padding: 0 10px;
+                margin-bottom: 0;
+                border-bottom: none;
+            }
+            
+            .nav-menu {
+                display: flex;
+                flex: 1;
+                justify-content: space-around;
+            }
+            
+            .nav-item {
+                padding: 10px;
+            }
+            
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /*========================================================================
+           LINEAR-STYLE SAAS APP UPGRADE
+        ========================================================================*/
+        :root {
+            --primary: #ffffff;
+            --secondary: #5e6ad2;
+            --success: #4ade80;
+            --warning: #facc15;
+            --danger: #f87171;
+            --light: rgba(255, 255, 255, 0.05);
+            --dark: #000000;
+            --gray: #8a8f98;
+            
+            --app-bg: #070809;
+            --card-bg: rgba(25, 25, 25, 0.4);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            background-color: var(--app-bg) !important;
+            color: #e5e5e5 !important;
+            background-image: 
+                radial-gradient(ellipse at top center, rgba(94, 106, 210, 0.15), transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(255, 255, 255, 0.05), transparent 40%) !important;
+            background-attachment: fixed !important;
+        }
+
+        /* Sidebar Glassmorphism */
+        .sidebar {
+            background-color: rgba(7, 8, 9, 0.7) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-right: 1px solid var(--border-color);
+            box-shadow: none !important;
+        }
+        
+        .logo { border-bottom-color: var(--border-color) !important; }
+        .logo h2 { color: #ffffff !important; }
+        .nav-item a { color: #8a8f98 !important; }
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border-left-color: #ffffff !important;
+        }
+        .nav-item.active a { color: #ffffff !important; }
+        .nav-item i { color: #8a8f98 !important; }
+        .nav-item.active i { color: #ffffff !important; }
+
+        /* Generic Base Cards Override */
+        .card, .module-section, .stat-box {
+            background: var(--card-bg) !important;
+            backdrop-filter: blur(12px) !important;
+            border: 1px solid var(--border-color) !important;
+            box-shadow: var(--shadow) !important;
+            color: #e5e5e5 !important;
+        }
+        
+        /* Headers */
+        .header {
+            border-bottom-color: var(--border-color) !important;
+        }
+        .header h1, h2, h3, h4, h5, h6 { color: #ffffff !important; }
+        .card-title, .section-title, .user-info h4 { color: #ffffff !important; }
+        .user-info p { color: var(--gray) !important; }
+        
+        /* Fix Table bg */
+        th {
+            background-color: rgba(255,255,255,0.05) !important;
+            color: #ffffff !important;
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+        tr, td { background-color: transparent !important; }
+        td {
+            color: #e5e5e5 !important;
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+        tr:hover {
+            background-color: rgba(255,255,255,0.02) !important;
+        }
+
+        /* Statuses */
+        .status-present, .status-approved { background-color: rgba(74, 222, 128, 0.1) !important; color: #4ade80 !important; }
+        .status-absent, .status-rejected { background-color: rgba(248, 113, 113, 0.1) !important; color: #f87171 !important; }
+        .status-pending { background-color: rgba(250, 204, 21, 0.1) !important; color: #facc15 !important; }
+        
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(180deg, #27272a, #18181b) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(180deg, #3f3f46, #27272a) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+        }
+        
+        .btn-secondary {
+            background: transparent !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #e5e5e5 !important;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+        }
+
+        /* Base class for 3D JS effects */
+        .tilt-card {
+            transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.3s ease;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        .tilt-card:hover { border-color: rgba(255, 255, 255, 0.2) !important; }
+    </style>
+    {%block stylecontent%}
+    {%endblock%}
+</head>
+<body>
+    <div class="dashboard_container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <h2>HR Dashboard</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'employee_list' %}">
+                        <i class="fas fa-user"></i>
+                        <span>Employees</span>
+                    </a>
+                </li>
+
+               <!-- In your branch_nav.html or manager_nav.html -->
+{% comment %} <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+        <i class="fas fa-money-bill-wave me-2"></i>Payroll
+    </a>
+    <ul class="dropdown-menu">
+        <!-- STEP 1: Upload Attendance (Initial/Start) -->
+        <li>
+            <a class="dropdown-item" href="{% url 'manager_attendance_upload' %}">
+                <i class="fas fa-upload me-2 text-primary"></i>1. Upload Attendance
+            </a>
+        </li>
+        
+        <!-- STEP 2: View Attendance (Verify) -->
+        <li>
+            <a class="dropdown-item" href="{% url 'manager_attendance_view' %}">
+                <i class="fas fa-eye me-2 text-info"></i>2. View Attendance
+            </a>
+        </li>
+        
+        <!-- Divider -->
+        <li><hr class="dropdown-divider"></li>
+        
+        <!-- STEP 3: Settings (Configure) -->
+        <li>
+            <a class="dropdown-item" href="{% url 'manager_payroll_settings' %}">
+                <i class="fas fa-cog me-2 text-secondary"></i>Payroll Settings
+            </a>
+        </li>
+        
+        <!-- STEP 4: Calculate Salary (Process) -->
+        <li>
+            <a class="dropdown-item" href="{% url 'manager_salary_calculation' %}">
+                <i class="fas fa-calculator me-2 text-warning"></i>3. Calculate Salary
+            </a>
+        </li>
+        
+        <!-- STEP 5: Export (Download) -->
+        <li>
+            <a class="dropdown-item" href="{% url 'manager_export_salary' %}">
+                <i class="fas fa-file-excel me-2 text-success"></i>4. Export Salary
+            </a>
+        </li>
+    </ul>
+</li> {% endcomment %}
+                <li class="nav-item">
+                      <a href="{% url 'manager_leave_dashboard' %}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Leave Management</span>
+                      </a>
+                </li>
+                <li class="nav-item">
+                    <i class="fas fa-calendar-week">
+                         <a href="{% url 'shift_dashboard' %}">
+                    </i>
+                    <span>Shift Scheduling</span></a>
+                </li>
+                <li class="nav-item">
+                    <i class="fas fa-money-bill-wave"></i>
+                         <a href="{% url 'payroll_list' %}">
+                    </i>
+                    <span>Payroll</span></a>
+                </li>
+                <li class="nav-item">
+                    <i class="fas fa-chart-bar">
+                        <a href="{% url 'branch_analytics' %}">
+                    </i>
+                    <span> Reports</span></a>
+                </li>
+                <li class="nav-item">
+                    <i class="fas fa-cog">
+                          <a href="{% url 'logout' %}">
+                    </i>
+                    <span>Logout</span></a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1>Branch Manager Dashboard</h1>
+                <div class="user-info">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User">
+                    <div>
+                        <h4>John Anderson</h4>
+                        <p>Branch Manager</p>
+                    </div>
+                </div>
+            </div>
+
+           {%block content%}
+                {%endblock%}
+    </div>
+
+    <script>
+        // Simulate real-time updates
+        function updateAttendance() {
+            const presentCount = Math.floor(Math.random() * 5) + 40;
+            const totalCount = 48;
+            const lateCount = Math.floor(Math.random() * 5);
+            const absentCount = totalCount - presentCount;
+            
+            document.querySelector('.card-value').textContent = `${presentCount}/${totalCount}`;
+            document.querySelector('.card-desc').textContent = 
+                `Present staff today. ${lateCount} late arrivals, ${absentCount} absent.`;
+            
+            // Update the stats grid
+            document.querySelectorAll('.stat-box .stat-value')[1].textContent = lateCount;
+            document.querySelectorAll('.stat-box .stat-value')[2].textContent = absentCount;
+            
+            // Update attendance rate
+            const attendanceRate = Math.round((presentCount / totalCount) * 100);
+            document.querySelectorAll('.stat-box .stat-value')[0].textContent = `${attendanceRate}%`;
+        }
+        
+        // Update leave requests count
+        function updateLeaveCount() {
+            const leaveCount = Math.floor(Math.random() * 3) + 5;
+            document.querySelectorAll('.card-value')[1].textContent = `${leaveCount} Pending`;
+        }
+        
+        // Update shift conflicts
+        function updateShiftConflicts() {
+            const conflictCount = Math.floor(Math.random() * 3) + 3;
+            document.querySelectorAll('.card-value')[2].textContent = `${conflictCount} Conflicts`;
+        }
+        
+        // Update task completion rate
+        function updateTaskCompletion() {
+            const completionRate = Math.floor(Math.random() * 6) + 90;
+            document.querySelectorAll('.card-value')[3].textContent = `${completionRate}%`;
+            
+            // Update task completion in daily reports
+            document.querySelectorAll('.stat-box .stat-value')[4].textContent = `${completionRate}%`;
+        }
+        
+        // Initialize with random data
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAttendance();
+            updateLeaveCount();
+            updateShiftConflicts();
+            updateTaskCompletion();
+            
+            // Simulate live updates every 30 seconds
+            setInterval(updateAttendance, 30000);
+            setInterval(updateLeaveCount, 35000);
+            setInterval(updateShiftConflicts, 40000);
+            setInterval(updateTaskCompletion, 45000);
+            
+            // Add click handlers to buttons
+            document.querySelectorAll('.btn-primary').forEach(button => {
+                button.addEventListener('click', function() {
+                    alert('Action would be performed in a real application.');
+                });
+            });
+            
+            // Add active state to navigation items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.nav-item').forEach(nav => {
+                        nav.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+    
+    <!-- GSAP + ScrollTrigger CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof gsap === "undefined") return;
+            gsap.registerPlugin(ScrollTrigger);
+
+            // 1. Dashboard Cards Staggered Fade Up
+            if (document.querySelector('.dashboard-cards')) {
+                gsap.fromTo('.card', 
+                    { y: 50, opacity: 0 }, 
+                    {
+                        y: 0, 
+                        opacity: 1, 
+                        duration: 0.8, 
+                        stagger: 0.1,
+                        ease: "power2.out",
+                        scrollTrigger: {
+                            trigger: ".dashboard-cards",
+                            start: "top 80%"
+                        }
+                    }
+                );
+            }
+
+            // 2. Module Sections Fade/Slide Right
+            if (document.querySelectorAll('.module-section').length > 0) {
+                gsap.fromTo('.module-section', 
+                    { x: -30, opacity: 0 }, 
+                    {
+                        x: 0, 
+                        opacity: 1, 
+                        duration: 0.8, 
+                        stagger: 0.2,
+                        ease: "power2.out",
+                        scrollTrigger: {
+                            trigger: ".main-content",
+                            start: "top 80%"
+                        }
+                    }
+                );
+            }
+
+            // 3. Stats Reveal Pop
+            if (document.querySelectorAll('.stat-box').length > 0) {
+                gsap.fromTo('.stat-box', 
+                    { scale: 0.8, opacity: 0 }, 
+                    {
+                        scale: 1, 
+                        opacity: 1, 
+                        duration: 0.5, 
+                        stagger: 0.05,
+                        ease: "back.out(1.5)",
+                        scrollTrigger: {
+                            trigger: ".stats-grid",
+                            start: "top 85%"
+                        }
+                    }
+                );
+            }
+
+            // 4. Lightweight 3D Tilt Effect for Cards
+            const cards = document.querySelectorAll('.card, .module-section');
+            
+            cards.forEach(card => {
+                card.classList.add('tilt-card');
+                
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    // Ultra lightweight max +/- 3deg to keep it clean
+                    const rotateX = ((y - centerY) / centerY) * -3;
+                    const rotateY = ((x - centerX) / centerX) * 3;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`;
+                    
+                    card.style.boxShadow = `
+                        ${-rotateY * 1.5}px ${rotateX * 1.5}px 30px rgba(0, 0, 0, 0.6),
+                        0 0 20px rgba(255, 255, 255, 0.05) inset
+                    `;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)`;
+                    card.style.boxShadow = `var(--card-shadow)`;
+                });
+            });
+        });
+    </script>
+</body>
+</html>

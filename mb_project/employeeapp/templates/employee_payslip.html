@@ -1,0 +1,221 @@
+<!-- branchapp/templates/employee_payslip.html -->
+{% extends "employee_nav.html" %}
+
+{% block content %}
+<div class="container">
+    <!-- Payslip Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fa fa-file-text"></i> Salary Payslip - {{ month_name }} {{ payroll.year }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payslip Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow" id="payslip">
+                <div class="card-body">
+                    <!-- Company Header -->
+                    <div class="row mb-4">
+                        <div class="col-12 text-center">
+                            <h2>Your Company Name</h2>
+                            <h5>Salary Payslip</h5>
+                            <p>For the month of {{ month_name }} {{ payroll.year }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Employee Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="150">Employee Name</th>
+                                    <td><strong>{{ employee.full_name }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Employee Code</th>
+                                    <td>{{ employee.employee_code }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Designation</th>
+                                    <td>{{ employee.designation.role|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="150">Branch</th>
+                                    <td>{{ employee.branch.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Salary Type</th>
+                                    <td>{{ payroll.salary_type|title }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Payment Status</th>
+                                    <td>
+                                        {% if payroll.payment_status == 'paid' %}
+                                        <span class="badge badge-success">Paid</span>
+                                        {% else %}
+                                        <span class="badge badge-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Attendance Summary -->
+                    <h5 class="bg-light p-2">Attendance Summary</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-info">
+                                <div class="card-body text-center">
+                                    <h5>{{ payroll.total_days }}</h5>
+                                    <p class="mb-0">Total Days</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <h5>{{ payroll.present_days }}</h5>
+                                    <p class="mb-0">Present</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h5>{{ payroll.leave_days }}</h5>
+                                    <p class="mb-0">Leaves</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-danger">
+                                <div class="card-body text-center">
+                                    <h5>{{ payroll.holidays }}</h5>
+                                    <p class="mb-0">Holidays</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Salary Calculation -->
+                    <h5 class="bg-light p-2">Salary Calculation</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="300">Description</th>
+                            <th class="text-right">Amount (₹)</th>
+                        </tr>
+                        <tr>
+                            <td>Basic Salary</td>
+                            <td class="text-right">{{ payroll.basic_salary|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Working Days (Total - Holidays)</td>
+                            <td class="text-right">{{ working_days }} days</td>
+                        </tr>
+                        <tr>
+                            <td>Present Days</td>
+                            <td class="text-right">{{ payroll.present_days }} days</td>
+                        </tr>
+                        <tr>
+                            <td>Leave Days (Unpaid)</td>
+                            <td class="text-right">{{ payroll.leave_days }} days</td>
+                        </tr>
+                        <tr class="table-danger">
+                            <td><strong>Absent/Late Deduction</strong></td>
+                            <td class="text-right"><strong>- {{ payroll.absent_deduction|floatformat:2 }}</strong></td>
+                        </tr>
+                        <tr class="table-success">
+                            <td><strong>Net Salary</strong></td>
+                            <td class="text-right"><strong>₹{{ payroll.net_salary|floatformat:2 }}</strong></td>
+                        </tr>
+                    </table>
+                    
+                    <!-- Amount in Words (Optional) -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <p><strong>Amount in words:</strong> {{ payroll.net_salary|floatformat:2 }} Rupees Only</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="row mt-5">
+                        <div class="col-6">
+                            <p>Employee Signature</p>
+                        </div>
+                        <div class="col-6 text-right">
+                            <p>Authorized Signature</p>
+                        </div>
+                    </div>
+                    
+                    {% if payroll.payment_date %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <p class="text-muted">Payment Date: {{ payroll.payment_date }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{% url 'employee_salary' %}" class="btn btn-secondary">
+                <i class="fa fa-arrow-left"></i> Back to Salary
+            </a>
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fa fa-print"></i> Print Payslip
+            </button>
+            <a href="#" class="btn btn-success" onclick="downloadPDF()">
+                <i class="fa fa-download"></i> Download PDF
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .btn, .navbar, footer {
+            display: none !important;
+        }
+        #payslip {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .card {
+            break-inside: avoid;
+        }
+    }
+    #payslip {
+        padding: 20px;
+        background: white;
+    }
+    .table-bordered {
+        border: 1px solid #dee2e6;
+    }
+    .bg-light {
+        background-color: #f8f9fa !important;
+        padding: 10px;
+        margin-top: 20px;
+    }
+</style>
+
+<script>
+function downloadPDF() {
+    // Simple PDF download using browser print
+    window.print();
+}
+</script>
+{% endblock %}

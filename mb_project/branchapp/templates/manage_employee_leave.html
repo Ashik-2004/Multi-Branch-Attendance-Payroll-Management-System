@@ -1,0 +1,325 @@
+{% extends 'branch_nav.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-dark fw-bold">Leave Management</h1>
+            <p class="text-muted mb-0">Manage and approve employee leave requests</p>
+        </div>
+        <div class="d-flex gap-2">
+           
+            <a href="{% url 'manager_leave_reports' %}" class="btn btn-outline-success">
+                <i class="fas fa-chart-bar me-2"></i>Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">Total Employees</p>
+                            <h3 class="fw-bold mb-0">{{ total_employees }}</h3>
+                        </div>
+                        <div class="icon-shape bg-primary bg-opacity-10 text-primary rounded-circle p-3">
+                            <i class="fas fa-users fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">Pending Requests</p>
+                            <h3 class="fw-bold mb-0 text-warning">{{ pending_count }}</h3>
+                        </div>
+                        <div class="icon-shape bg-warning bg-opacity-10 text-warning rounded-circle p-3">
+                            <i class="fas fa-clock fs-4"></i>
+                        </div>
+                    </div>
+                    <a href="{% url 'manager_pending_leaves' %}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">On Leave Today</p>
+                            <h3 class="fw-bold mb-0 text-info">{{ employees_on_leave }}</h3>
+                        </div>
+                        <div class="icon-shape bg-info bg-opacity-10 text-info rounded-circle p-3">
+                            <i class="fas fa-user-clock fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1">Today's Actions</p>
+                            <h3 class="fw-bold mb-0">
+                                <span class="text-success">{{ today_approved }}</span> / 
+                                <span class="text-danger">{{ today_rejected }}</span>
+                            </h3>
+                        </div>
+                        <div class="icon-shape bg-success bg-opacity-10 text-success rounded-circle p-3">
+                            <i class="fas fa-check-circle fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Pending Leave Requests -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-clock me-2 text-warning"></i>Pending Leave Requests
+                    </h6>
+                    <a href="{% url 'manager_pending_leaves' %}" class="btn btn-sm btn-primary">
+                        View All <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if pending_leaves %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Leave Type</th>
+                                    <th>Duration</th>
+                                    <th>Applied On</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for leave in pending_leaves %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <h6 class="mb-0">{{ leave.employee.full_name }}</h6>
+                                                <small class="text-muted">{{ leave.employee.employee_code }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ leave.leave_type.leave_name }}</span>
+                                    </td>
+                                    <td>
+                                        {{ leave.from_date|date:"M d" }} - {{ leave.to_date|date:"M d, Y" }}
+                                        <br>
+                                        <small class="text-muted">{{ leave.leave_days }} days</small>
+                                    </td>
+                                    <td>
+                                        {{ leave.applied_date|date:"M d, Y" }}
+                                        <br>
+                                        <small class="text-muted">{{ leave.applied_date|timesince }} ago</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'manager_leave_detail' leave.id %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            Review
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle text-success mb-3" style="font-size: 3rem;"></i>
+                        <p class="text-muted mb-0">No pending leave requests</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-history me-2 text-info"></i>Recent Activity (Last 7 Days)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_activity %}
+                    <div class="timeline">
+                        {% for activity in recent_activity %}
+                        <div class="d-flex mb-3">
+                            <div class="me-3">
+                                {% if activity.status == 'approved' %}
+                                <span class="badge bg-success p-2 rounded-circle">
+                                    <i class="fas fa-check"></i>
+                                </span>
+                                {% elif activity.status == 'rejected' %}
+                                <span class="badge bg-danger p-2 rounded-circle">
+                                    <i class="fas fa-times"></i>
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>{{ activity.employee.full_name }}</strong>
+                                        <span class="text-muted mx-2">•</span>
+                                        <span>{{ activity.leave_type.leave_name }}</span>
+                                    </div>
+                                    <small class="text-muted">{{ activity.reviewed_date|timesince }} ago</small>
+                                </div>
+                                <p class="text-muted small mb-0">
+                                    {{ activity.from_date|date:"M d" }} - {{ activity.to_date|date:"M d, Y" }} ({{ activity.leave_days }} days)
+                                    {% if activity.manager_remarks %}
+                                    <br><i class="fas fa-quote-left text-muted me-1"></i>{{ activity.manager_remarks }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-0">No recent activity</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions & Info -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-bolt me-2 text-primary"></i>Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'manager_pending_leaves' %}" class="btn btn-primary">
+                            <i class="fas fa-clock me-2"></i>Review Pending Leaves
+                            {% if pending_count %}
+                            <span class="badge bg-light text-primary ms-2">{{ pending_count }}</span>
+                            {% endif %}
+                        </a>
+                       
+                        <a href="{% url 'manager_leave_reports' %}" class="btn btn-outline-success">
+                            <i class="fas fa-chart-bar me-2"></i>Generate Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Leave Summary by Type -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-chart-pie me-2 text-success"></i>Leave Summary
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for leave_type in leave_types %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>{{ leave_type.leave_name }}</span>
+                            <span class="fw-bold">0/{{ leave_type.max_days }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-info" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Quick Tips -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-lightbulb me-2 text-warning"></i>Manager Tips
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Review pending leaves within 24 hours
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Check leave balance before approving
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Add remarks for rejected requests
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Monitor team availability in calendar
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.icon-shape {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.badge.rounded-circle {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+</style>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}

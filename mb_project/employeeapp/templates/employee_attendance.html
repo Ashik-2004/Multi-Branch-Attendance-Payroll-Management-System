@@ -1,0 +1,247 @@
+<!-- branchapp/templates/employee_attendance.html -->
+{% extends "employee_nav.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fa fa-calendar-check-o"></i> My Attendance History</h2>
+        </div>
+    </div>
+    
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fa fa-filter"></i> Filter Attendance</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="form-inline">
+                        <div class="form-group mr-3 mb-2">
+                            <label for="month" class="mr-2 font-weight-bold">Month:</label>
+                            <select name="month" id="month" class="form-control">
+                                {% for m in months %}
+                                <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>
+                                    {{ m }} - 
+                                    {% if m == 1 %}January
+                                    {% elif m == 2 %}February
+                                    {% elif m == 3 %}March
+                                    {% elif m == 4 %}April
+                                    {% elif m == 5 %}May
+                                    {% elif m == 6 %}June
+                                    {% elif m == 7 %}July
+                                    {% elif m == 8 %}August
+                                    {% elif m == 9 %}September
+                                    {% elif m == 10 %}October
+                                    {% elif m == 11 %}November
+                                    {% elif m == 12 %}December
+                                    {% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mr-3 mb-2">
+                            <label for="year" class="mr-2 font-weight-bold">Year:</label>
+                            <select name="year" id="year" class="form-control">
+                                {% for y in years %}
+                                <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>
+                                    {{ y }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary mb-2">
+                            <i class="fa fa-search"></i> View
+                        </button>
+                        <a href="{% url 'employee_attendance' %}" class="btn btn-secondary mb-2 ml-2">
+                            <i class="fa fa-refresh"></i> Reset
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card text-white bg-info">
+                <div class="card-body text-center">
+                    <h4>{{ summary.total_days }}</h4>
+                    <p class="mb-0">Total Days</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-success">
+                <div class="card-body text-center">
+                    <h4>{{ summary.present }}</h4>
+                    <p class="mb-0">Present</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-danger">
+                <div class="card-body text-center">
+                    <h4>{{ summary.absent }}</h4>
+                    <p class="mb-0">Absent</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-warning">
+                <div class="card-body text-center">
+                    <h4>{{ summary.leave }}</h4>
+                    <p class="mb-0">Leave Days</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-secondary">
+                <div class="card-body text-center">
+                    <h4>{{ summary.holiday }}</h4>
+                    <p class="mb-0">Holidays</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-primary">
+                <div class="card-body text-center">
+                    <h4>{{ summary.attendance_percent }}%</h4>
+                    <p class="mb-0">Attendance</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Calendar View -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fa fa-calendar"></i> {{ month_name }} {{ selected_year }} - Daily Attendance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Day</th>
+                                    <th>Status</th>
+                                    <th>Shift</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for day in attendance_data %}
+                                <tr class="
+                                    {% if day.status == 'present' %}table-success
+                                    {% elif day.status == 'absent' %}table-danger
+                                    {% elif day.status == 'leave' %}table-warning
+                                    {% elif day.status == 'half_day_leave' %}table-warning
+                                    {% elif day.status == 'holiday' %}table-info
+                                    {% endif %}
+                                ">
+                                    <td><strong>{{ day.date|date:"d" }}</strong></td>
+                                    <td>{{ day.day_name }}</td>
+                                    <td>
+                                        {% if day.status == 'present' %}
+                                            <span class="badge badge-success">Present</span>
+                                        {% elif day.status == 'absent' %}
+                                            <span class="badge badge-danger">Absent</span>
+                                        {% elif day.status == 'leave' %}
+                                            <span class="badge badge-warning">Full Day Leave</span>
+                                        {% elif day.status == 'half_day_leave' %}
+                                            <span class="badge badge-warning">Half Day Leave</span>
+                                        {% elif day.status == 'holiday' %}
+                                            <span class="badge badge-info">Holiday</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if day.shift %}
+                                            {{ day.shift.shift_name }}<br>
+                                            <small>{{ day.shift.start_time|time:"H:i" }} - {{ day.shift.end_time|time:"H:i" }}</small>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ day.remarks }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Legend -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fa fa-info-circle"></i> Legend</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <span class="badge badge-success p-2">Present</span>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge badge-danger p-2">Absent</span>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge badge-warning p-2">Full Day Leave</span>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge badge-warning p-2">Half Day Leave</span>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge badge-info p-2">Holiday</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{% url 'employee_salary' %}" class="btn btn-primary">
+                <i class="fa fa-money"></i> Back to Salary
+            </a>
+            <button onclick="window.print()" class="btn btn-success">
+                <i class="fa fa-print"></i> Print Report
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .btn, form, .navbar, footer {
+            display: none !important;
+        }
+        .table {
+            font-size: 12pt;
+        }
+        .badge {
+            border: 1px solid #000 !important;
+            color: #000 !important;
+            background: transparent !important;
+        }
+    }
+    .table td {
+        vertical-align: middle;
+    }
+    .badge {
+        font-size: 0.9rem;
+        padding: 5px 10px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,450 @@
+<!-- AdminApp/templates/admin_analytics.html -->
+{% extends "admin_nav.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fa fa-dashboard"></i> Admin Analytics Dashboard</h2>
+        </div>
+    </div>
+    
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fa fa-filter"></i> Filter Reports</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="form-inline">
+                        <div class="form-group mr-3 mb-2">
+                            <label for="month" class="mr-2 font-weight-bold">Month:</label>
+                            <select name="month" id="month" class="form-control">
+                                {% for m in months %}
+                                <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>
+                                    {{ m }} - 
+                                    {% if m == 1 %}January
+                                    {% elif m == 2 %}February
+                                    {% elif m == 3 %}March
+                                    {% elif m == 4 %}April
+                                    {% elif m == 5 %}May
+                                    {% elif m == 6 %}June
+                                    {% elif m == 7 %}July
+                                    {% elif m == 8 %}August
+                                    {% elif m == 9 %}September
+                                    {% elif m == 10 %}October
+                                    {% elif m == 11 %}November
+                                    {% elif m == 12 %}December
+                                    {% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mr-3 mb-2">
+                            <label for="year" class="mr-2 font-weight-bold">Year:</label>
+                            <select name="year" id="year" class="form-control">
+                                {% for y in years %}
+                                <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>
+                                    {{ y }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary mb-2">
+                            <i class="fa fa-search"></i> Apply Filter
+                        </button>
+                        <a href="{% url 'admin_analytics' %}" class="btn btn-secondary mb-2 ml-2">
+                            <i class="fa fa-refresh"></i> Reset
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- REPORT 1: Company Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header" style="background-color: #17a2b8; color: white;">
+                    <h5 class="mb-0"><i class="fa fa-building"></i> Company Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card text-white" style="background: linear-gradient(45deg, #2193b0, #6dd5ed);">
+                                <div class="card-body text-center">
+                                    <h1 class="display-4">{{ total_branches }}</h1>
+                                    <p class="mb-0 font-weight-bold">Total Branches</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card text-white" style="background: linear-gradient(45deg, #11998e, #38ef7d);">
+                                <div class="card-body text-center">
+                                    <h1 class="display-4">{{ total_managers }}</h1>
+                                    <p class="mb-0 font-weight-bold">Active Managers</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card text-white" style="background: linear-gradient(45deg, #f7971e, #ffd200);">
+                                <div class="card-body text-center">
+                                    <h1 class="display-4">{{ total_employees_all }}</h1>
+                                    <p class="mb-0 font-weight-bold">Total Employees</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Employees per Branch -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-secondary text-white">
+                                    <h6 class="mb-0"><i class="fa fa-users"></i> Employees per Branch</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-hover table-striped mb-0">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>Branch Name</th>
+                                                <th class="text-center">Employee Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for branch in employees_per_branch %}
+                                            <tr>
+                                                <td><i class="fa fa-building-o mr-2"></i>{{ branch.name }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-primary badge-pill p-2">{{ branch.employee_count }}</span>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="2" class="text-center text-muted py-3">
+                                                    <i class="fa fa-info-circle mr-2"></i>No branches found
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- REPORT 2: Company-wide Payroll Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header" style="background-color: #28a745; color: white;">
+                    <h5 class="mb-0"><i class="fa fa-money"></i> Company Payroll - {{ month_name }} {{ selected_year }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <h3 class="text-success">₹{{ total_payroll|floatformat:2 }}</h3>
+                                    <p class="mb-0 text-muted font-weight-bold">Total Net Salary</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <h3 class="text-primary">₹{{ total_basic|floatformat:2 }}</h3>
+                                    <p class="mb-0 text-muted font-weight-bold">Total Basic</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-danger">
+                                <div class="card-body text-center">
+                                    <h3 class="text-danger">₹{{ total_deductions|floatformat:2 }}</h3>
+                                    <p class="mb-0 text-muted font-weight-bold">Total Deductions</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-info">
+                                <div class="card-body text-center">
+                                    <h3 class="text-info">₹{{ avg_salary|floatformat:2 }}</h3>
+                                    <p class="mb-0 text-muted font-weight-bold">Average Salary</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-2">
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-secondary">
+                                <div class="card-body text-center">
+                                    <h3 class="text-secondary">{{ payroll_employee_count }}</h3>
+                                    <p class="mb-0 text-muted font-weight-bold">Employees Processed</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-secondary">
+                                <div class="card-body text-center">
+                                    <h3 class="text-success">{{ paid_count }}</h3>
+                                    <p class="mb-0 text-muted font-weight-bold">Paid Employees</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payroll by Branch -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-secondary text-white">
+                                    <h6 class="mb-0"><i class="fa fa-sitemap"></i> Payroll by Branch</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-hover table-striped mb-0">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>Branch</th>
+                                                <th class="text-center">Employees</th>
+                                                <th class="text-right">Total Payroll</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for branch in payroll_by_branch %}
+                                            <tr>
+                                                <td><i class="fa fa-building-o mr-2"></i>{{ branch.name }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-info">{{ branch.branch_employees|default:"0" }}</span>
+                                                </td>
+                                                <td class="text-right font-weight-bold text-success">
+                                                    ₹{{ branch.branch_payroll|default:"0"|floatformat:2 }}
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted py-3">
+                                                    <i class="fa fa-info-circle mr-2"></i>No payroll data for this month
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- REPORT 3: Company-wide Leave Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header" style="background-color: #ffc107; color: #212529;">
+                    <h5 class="mb-0"><i class="fa fa-calendar"></i> Company Leave Summary - {{ month_name }} {{ selected_year }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h3 class="text-warning">{{ total_leave_requests }}</h3>
+                                    <p class="mb-0 text-muted font-weight-bold">Total Leave Requests</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h3 class="text-warning">{{ total_employees_on_leave }}</h3>
+                                    <p class="mb-0 text-muted font-weight-bold">Employees on Leave</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h3 class="text-warning">{{ total_leave_days }}</h3>
+                                    <p class="mb-0 text-muted font-weight-bold">Total Leave Days</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-header bg-secondary text-white">
+                                    <h6 class="mb-0"><i class="fa fa-building"></i> Leave Days by Branch</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-hover table-striped mb-0">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>Branch</th>
+                                                <th class="text-center">Leave Days</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for branch, days in leave_by_branch.items %}
+                                            <tr>
+                                                <td><i class="fa fa-building-o mr-2"></i>{{ branch }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-warning p-2">{{ days }}</span>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="2" class="text-center text-muted py-3">
+                                                    <i class="fa fa-info-circle mr-2"></i>No leave data
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-header bg-secondary text-white">
+                                    <h6 class="mb-0"><i class="fa fa-tag"></i> Leaves by Type</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-hover table-striped mb-0">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>Leave Type</th>
+                                                <th class="text-center">Number of Requests</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in leave_by_type %}
+                                            <tr>
+                                                <td><i class="fa fa-calendar-check-o mr-2"></i>{{ item.leave_type__leave_name }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-info p-2">{{ item.count }}</span>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="2" class="text-center text-muted py-3">
+                                                    <i class="fa fa-info-circle mr-2"></i>No leave requests
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+ 
+</div>
+
+<!-- Custom CSS for better styling -->
+<style>
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    
+    .card-header {
+        font-weight: bold;
+        padding: 12px 20px;
+    }
+    
+    .table th {
+        font-weight: 600;
+    }
+    
+    .badge {
+        font-size: 0.9rem;
+        padding: 5px 10px;
+    }
+    
+    /* Print styles */
+    @media print {
+        .btn, form, .navbar, footer, .card-header {
+            display: none !important;
+        }
+        .card {
+            break-inside: avoid;
+            border: 1px solid #ddd !important;
+        }
+        .card-body {
+            padding: 15px !important;
+        }
+        table {
+            font-size: 12pt !important;
+        }
+    }
+    
+    /* Hover effects */
+    .card.border-success:hover,
+    .card.border-primary:hover,
+    .card.border-danger:hover,
+    .card.border-info:hover,
+    .card.border-warning:hover {
+        transform: scale(1.02);
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    /* Gradient backgrounds for cards */
+    .bg-gradient-primary {
+        background: linear-gradient(45deg, #2193b0, #6dd5ed);
+    }
+    
+    .bg-gradient-success {
+        background: linear-gradient(45deg, #11998e, #38ef7d);
+    }
+    
+    .bg-gradient-warning {
+        background: linear-gradient(45deg, #f7971e, #ffd200);
+    }
+    
+    /* Table styles */
+    .table thead.thead-dark th {
+        background-color: #343a40;
+        color: white;
+        border: none;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        h1.display-4 {
+            font-size: 2.5rem;
+        }
+        .card-body {
+            padding: 15px;
+        }
+    }
+</style>
+
+<!-- Add Font Awesome if not already included -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+{% endblock %}

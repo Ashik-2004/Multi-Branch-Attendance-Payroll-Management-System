@@ -1,0 +1,666 @@
+{% extends "employee_nav.html" %}
+{%block content%}
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card stat-1">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-number">24</div>
+                    <div class="stat-label">Present Days (This Month)</div>
+                </div>
+                <div class="stat-card stat-2">
+                    <div class="stat-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="stat-number">₹85,500</div>
+                    <div class="stat-label">Current Month Salary</div>
+                </div>
+                <div class="stat-card stat-3">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Remaining Leaves</div>
+                </div>
+                <div class="stat-card stat-4">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Late Marks</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <button class="btn btn-primary w-100" data-tab="qr-attendance">
+                                        <i class="fas fa-qrcode"></i> Mark Attendance
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-success w-100" data-tab="apply-leave">
+                                        <i class="fas fa-calendar-plus"></i> Apply Leave
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-warning w-100" data-tab="salary">
+                                        <i class="fas fa-file-invoice-dollar"></i> View Payslip
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-outline w-100" data-tab="attendance-history">
+                                        <i class="fas fa-history"></i> Attendance History
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Recent Activities</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="activity-list">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-success text-white rounded-circle p-2 me-3">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0">Attendance marked successfully</p>
+                                        <small class="text-muted">Today, 9:00 AM</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-info text-white rounded-circle p-2 me-3">
+                                        <i class="fas fa-calendar"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0">Leave request submitted</p>
+                                        <small class="text-muted">Yesterday, 2:30 PM</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary text-white rounded-circle p-2 me-3">
+                                        <i class="fas fa-file-invoice"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0">January payslip downloaded</p>
+                                        <small class="text-muted">Jan 5, 2024</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Attendance Tab -->
+        <div id="qr-attendance" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-qrcode me-2"></i>QR Code Attendance</h5>
+                    <small>Scan QR code to mark your attendance</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="qr-container">
+                                <div id="qr-reader"></div>
+                                <div id="qr-reader-results"></div>
+                                
+                                <div class="attendance-status" id="attendanceStatus"></div>
+                                
+                                <div class="mt-4">
+                                    <p class="text-muted mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Point your camera at the QR code displayed at your office location
+                                    </p>
+                                    <button class="btn btn-primary" id="startScanner">
+                                        <i class="fas fa-camera me-2"></i>Start Scanner
+                                    </button>
+                                    <button class="btn btn-outline ms-2" id="stopScanner" disabled>
+                                        <i class="fas fa-stop me-2"></i>Stop Scanner
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6>Today's Attendance Status</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div class="bg-success text-white rounded-circle p-3 me-3">
+                                            <i class="fas fa-check fa-2x"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">Checked In</h5>
+                                            <p class="text-muted mb-0">Time: 9:00 AM</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Check Out Time</label>
+                                        <input type="time" class="form-control" id="checkoutTime" value="18:00">
+                                    </div>
+                                    
+                                    <button class="btn btn-primary w-100" id="manualCheckout">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Manual Check Out
+                                    </button>
+                                    
+                                    <hr class="my-4">
+                                    
+                                    <h6>Quick Stats</h6>
+                                    <div class="row text-center mt-3">
+                                        <div class="col-4">
+                                            <div class="border rounded p-2">
+                                                <div class="text-primary fw-bold">24</div>
+                                                <small>Present Days</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="border rounded p-2">
+                                                <div class="text-success fw-bold">96%</div>
+                                                <small>Attendance %</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="border rounded p-2">
+                                                <div class="text-warning fw-bold">0</div>
+                                                <small>Late Days</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Apply Leave Tab -->
+        <div id="apply-leave" class="tab-content">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-calendar-plus me-2"></i>Apply for Leave</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="leaveForm">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Leave Type</label>
+                                        <select class="form-select" id="leaveType" required>
+                                            <option value="">Select Leave Type</option>
+                                            <option value="casual">Casual Leave</option>
+                                            <option value="sick">Sick Leave</option>
+                                            <option value="earned">Earned Leave</option>
+                                            <option value="maternity">Maternity Leave</option>
+                                            <option value="paternity">Paternity Leave</option>
+                                            <option value="others">Others</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Duration</label>
+                                        <select class="form-select" id="leaveDuration" required>
+                                            <option value="">Select Duration</option>
+                                            <option value="full_day">Full Day</option>
+                                            <option value="half_day">Half Day</option>
+                                            <option value="multiple_days">Multiple Days</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Start Date</label>
+                                        <input type="date" class="form-control" id="startDate" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">End Date</label>
+                                        <input type="date" class="form-control" id="endDate" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Reason for Leave</label>
+                                    <textarea class="form-control" id="leaveReason" rows="4" 
+                                              placeholder="Please specify the reason for your leave..." required></textarea>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">Upload Supporting Document (Optional)</label>
+                                    <input type="file" class="form-control" id="supportingDoc" accept=".pdf,.jpg,.png">
+                                    <small class="text-muted">Max file size: 5MB. Allowed formats: PDF, JPG, PNG</small>
+                                </div>
+                                
+                                <div class="d-flex gap-3">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane me-2"></i>Submit Application
+                                    </button>
+                                    <button type="button" class="btn btn-outline" id="clearForm">
+                                        <i class="fas fa-redo me-2"></i>Clear Form
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Leave History -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h6>Recent Leave Applications</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Duration</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Jan 15-16, 2024</td>
+                                            <td>Sick Leave</td>
+                                            <td>2 Days</td>
+                                            <td><span class="badge bg-success">Approved</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Dec 25, 2023</td>
+                                            <td>Casual Leave</td>
+                                            <td>1 Day</td>
+                                            <td><span class="badge bg-success">Approved</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Nov 10, 2023</td>
+                                            <td>Earned Leave</td>
+                                            <td>1 Day</td>
+                                            <td><span class="badge bg-warning">Pending</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Leave Balance -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6>Leave Balance</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Casual Leave</span>
+                                    <span class="fw-bold">8/12</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-primary" style="width: 67%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Sick Leave</span>
+                                    <span class="fw-bold">3/10</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-success" style="width: 30%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Earned Leave</span>
+                                    <span class="fw-bold">15/30</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-warning" style="width: 50%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Tips -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6>Leave Application Tips</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Apply at least 2 days in advance
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Mention specific reason for leave
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Upload medical certificate for sick leaves
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Check leave balance before applying
+                                </li>
+                                <li>
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Inform your manager separately
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Salary Tab -->
+        <div id="salary" class="tab-content">
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Current Month Salary -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-money-bill-wave me-2"></i>Salary Details - January 2024</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="salary-breakdown">
+                                <div class="salary-item">
+                                    <span>Basic Salary</span>
+                                    <span class="fw-bold">₹50,000</span>
+                                </div>
+                                <div class="salary-item">
+                                    <span>House Rent Allowance (HRA)</span>
+                                    <span class="fw-bold">₹15,000</span>
+                                </div>
+                                <div class="salary-item">
+                                    <span>Travel Allowance</span>
+                                    <span class="fw-bold">₹8,000</span>
+                                </div>
+                                <div class="salary-item">
+                                    <span>Medical Allowance</span>
+                                    <span class="fw-bold">₹5,000</span>
+                                </div>
+                                <div class="salary-item">
+                                    <span>Special Allowance</span>
+                                    <span class="fw-bold">₹7,500</span>
+                                </div>
+                                <hr>
+                                <div class="salary-item">
+                                    <span>Total Earnings</span>
+                                    <span class="fw-bold text-success">₹85,500</span>
+                                </div>
+                                <hr>
+                                <div class="salary-item">
+                                    <span>Professional Tax</span>
+                                    <span class="fw-bold text-danger">₹2,000</span>
+                                </div>
+                                <div class="salary-item">
+                                    <span>Provident Fund (PF)</span>
+                                    <span class="fw-bold text-danger">₹6,000</span>
+                                </div>
+                                <div class="salary-item">
+                                    <span>Income Tax (TDS)</span>
+                                    <span class="fw-bold text-danger">₹7,500</span>
+                                </div>
+                                <hr>
+                                <div class="salary-item">
+                                    <span>Total Deductions</span>
+                                    <span class="fw-bold text-danger">₹15,500</span>
+                                </div>
+                                <div class="salary-item">
+                                    <span>Net Salary Payable</span>
+                                    <span class="fw-bold text-primary">₹70,000</span>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <button class="btn btn-primary w-100" id="downloadPayslip">
+                                        <i class="fas fa-download me-2"></i>Download Payslip
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button class="btn btn-outline w-100" id="printPayslip">
+                                        <i class="fas fa-print me-2"></i>Print Payslip
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Previous Payslips -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h6>Previous Payslips</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="payslip-list">
+                                <div class="payslip-item">
+                                    <div>
+                                        <h6 class="mb-1">December 2023</h6>
+                                        <small class="text-muted">Paid on: Dec 28, 2023</small>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold me-3">₹70,000</span>
+                                        <button class="btn btn-sm btn-outline">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="payslip-item">
+                                    <div>
+                                        <h6 class="mb-1">November 2023</h6>
+                                        <small class="text-muted">Paid on: Nov 28, 2023</small>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold me-3">₹70,000</span>
+                                        <button class="btn btn-sm btn-outline">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="payslip-item">
+                                    <div>
+                                        <h6 class="mb-1">October 2023</h6>
+                                        <small class="text-muted">Paid on: Oct 28, 2023</small>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold me-3">₹69,500</span>
+                                        <button class="btn btn-sm btn-outline">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Salary Summary -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6>Salary Summary 2023-24</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                <div class="mb-2">
+                                    <div class="text-primary fw-bold" style="font-size: 2rem;">₹8,40,000</div>
+                                    <small>Total Earnings (FY 2023-24)</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">Average Monthly Salary</small>
+                                <div class="fw-bold">₹70,000</div>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Tax Paid (TDS)</small>
+                                <div class="fw-bold">₹90,000</div>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">PF Contribution</small>
+                                <div class="fw-bold">₹72,000</div>
+                            </div>
+                            <div>
+                                <small class="text-muted">Net Received</small>
+                                <div class="fw-bold text-success">₹6,78,000</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tax Calculator -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6>Tax Calculator</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Annual Income</label>
+                                <input type="number" class="form-control" id="annualIncome" value="840000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Exemptions</label>
+                                <input type="number" class="form-control" id="exemptions" value="150000">
+                            </div>
+                            <button class="btn btn-primary w-100" id="calculateTax">
+                                <i class="fas fa-calculator me-2"></i>Calculate Tax
+                            </button>
+                            <div class="mt-3 p-3 bg-light rounded" id="taxResult">
+                                <div class="fw-bold">Estimated Tax: ₹90,000</div>
+                                <small class="text-muted">Monthly: ₹7,500</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance History Tab -->
+        <div id="attendance-history" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-history me-2"></i>Attendance History</h5>
+                    <div class="d-flex gap-3">
+                        <select class="form-select form-select-sm" style="width: auto;" id="monthFilter">
+                            <option value="1">January 2024</option>
+                            <option value="12">December 2023</option>
+                            <option value="11">November 2023</option>
+                            <option value="10">October 2023</option>
+                        </select>
+                        <button class="btn btn-sm btn-outline" id="exportAttendance">
+                            <i class="fas fa-download me-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="attendance-history">
+                        <div class="table-header">
+                            <div>Date</div>
+                            <div>Check In</div>
+                            <div>Check Out</div>
+                            <div>Status</div>
+                        </div>
+                        
+                        <div id="attendanceTable">
+                            <!-- Attendance data will be populated by JavaScript -->
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <span class="text-muted">Showing 25 records</span>
+                            </div>
+                            <nav>
+                                <ul class="pagination mb-0">
+                                    <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Attendance Summary -->
+            <div class="row mt-4">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6>Monthly Summary</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-3">
+                                    <div class="border rounded p-3">
+                                        <div class="text-success fw-bold" style="font-size: 1.5rem;">24</div>
+                                        <small>Present Days</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="border rounded p-3">
+                                        <div class="text-danger fw-bold" style="font-size: 1.5rem;">0</div>
+                                        <small>Absent Days</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="border rounded p-3">
+                                        <div class="text-warning fw-bold" style="font-size: 1.5rem;">0</div>
+                                        <small>Late Days</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="border rounded p-3">
+                                        <div class="text-info fw-bold" style="font-size: 1.5rem;">1</div>
+                                        <small>Leave Days</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6>Attendance Percentage</h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="position-relative d-inline-block">
+                                <div id="attendanceChart" style="width: 150px; height: 150px;"></div>
+                                <div class="position-absolute top-50 start-50 translate-middle">
+                                    <div class="fw-bold" style="font-size: 1.5rem;">96%</div>
+                                </div>
+                            </div>
+                            <p class="mt-3 mb-0 text-muted">Overall attendance rate for January 2024</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+           {% endblock %}
+   

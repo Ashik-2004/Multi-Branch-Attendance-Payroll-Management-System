@@ -1,0 +1,272 @@
+{% extends "branch_nav.html" %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-2 text-primary">
+                <i class="fas fa-calendar-check me-2"></i>Manage Schedule
+            </h1>
+            <p class="text-muted mb-0">
+                {{ schedule.schedule_name }} - {{ branch.branch_name }}
+            </p>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'shift_schedule_list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Back to List
+            </a>
+            {% if schedule.status == 'draft' %}
+            <form method="POST" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" name="publish" class="btn btn-success">
+                    <i class="fas fa-rocket me-2"></i>Publish
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Schedule Info -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Period</h6>
+                    <h4 class="mb-0">{{ schedule.get_period_display }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Duration</h6>
+                    <h4 class="mb-0">{{ schedule.duration_days }} days</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Status</h6>
+                    <h4 class="mb-0">
+                        <span class="badge 
+                            {% if schedule.status == 'published' %}bg-success
+                            {% elif schedule.status == 'draft' %}bg-warning
+                            {% else %}bg-info{% endif %}">
+                            {{ schedule.get_status_display }}
+                        </span>
+                    </h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Employees</h6>
+                    <h4 class="mb-0">{{ assignments.count }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Left: Assignment Forms -->
+        <div class="col-lg-4 mb-4">
+            <!-- Individual Assignment -->
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Assign to Employee
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Select Employee</label>
+                            <select name="employee" class="form-select" required>
+                                <option value="">Choose employee...</option>
+                                {% for employee in available_employees %}
+                                <option value="{{ employee.employee_id }}">
+                                    {{ employee.full_name }} ({{ employee.employee_code }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Select Shift</label>
+                            <select name="shift" class="form-select" required>
+                                <option value="">Choose shift...</option>
+                                {% for shift in available_shifts %}
+                                <option value="{{ shift.shift_id }}">
+                                    {{ shift.shift_name }} ({{ shift.start_time|time:"H:i" }} - {{ shift.end_time|time:"H:i" }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" name="assign_shift" class="btn btn-primary w-100">
+                            <i class="fas fa-user-check me-2"></i>Assign Shift
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bulk Assignment -->
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Bulk Assign
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Select Shift</label>
+                            <select name="bulk_shift" class="form-select" required>
+                                <option value="">Choose shift...</option>
+                                {% for shift in available_shifts %}
+                                <option value="{{ shift.shift_id }}">
+                                    {{ shift.shift_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Select Employees</label>
+                            <select name="employee_list" class="form-select" multiple size="5">
+                                {% for employee in available_employees %}
+                                <option value="{{ employee.employee_id }}">
+                                    {{ employee.full_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
+                        </div>
+                        <button type="submit" name="bulk_assign" class="btn btn-warning w-100">
+                            <i class="fas fa-user-friends me-2"></i>Assign to Selected
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Assigned Employees -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list-check me-2"></i>Assigned Employees
+                        <span class="badge bg-primary ms-2">{{ assignments.count }}</span>
+                    </h6>
+                    <div>
+                        <button onclick="window.print()" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-print"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if assignments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Employee</th>
+                                    <th>Shift</th>
+                                    <th>Timing</th>
+                                    {% if schedule.status == 'draft' %}
+                                    <th>Action</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in assignments %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <strong>{{ assignment.employee.full_name }}</strong><br>
+                                        <small class="text-muted">{{ assignment.employee.employee_code }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            {{ assignment.shift.shift_name }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {{ assignment.shift.start_time|time:"H:i" }} - {{ assignment.shift.end_time|time:"H:i" }}
+                                    </td>
+                                    {% if schedule.status == 'draft' %}
+                                    <td>
+                                        <form method="POST" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="assignment_id" value="{{ assignment.assignment_id }}">
+                                            <button type="submit" name="remove_assignment" 
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Remove {{ assignment.employee.full_name }}?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No employees assigned yet</h5>
+                        <p class="text-muted">Use the forms on the left to assign employees</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+    }
+    
+    .card-header {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    
+    .badge {
+        padding: 0.4em 0.8em;
+        font-weight: 500;
+    }
+    
+    .btn {
+        border-radius: 6px;
+        font-weight: 500;
+    }
+    
+    .table th {
+        background-color: #f8f9fc;
+        font-weight: 600;
+        color: #5a5c69;
+    }
+</style>
+{% endblock %}
